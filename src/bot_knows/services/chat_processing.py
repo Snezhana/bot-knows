@@ -34,7 +34,7 @@ class ChatProcessingService:
         self,
         storage: StorageInterface,
         llm: LLMInterface,
-    ):
+    ) -> None:
         """Initialize service with dependencies.
 
         Args:
@@ -116,10 +116,9 @@ class ChatProcessingService:
                 # Extract first sentence (up to first period or 100 chars)
                 content = msg.content.strip()
                 period_idx = content.find(".")
+                first_sentence = content[:100]
                 if period_idx > 0:
                     first_sentence = content[:period_idx]
-                else:
-                    first_sentence = content[:100]
                 if first_sentence:
                     return first_sentence.strip()
 

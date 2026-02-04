@@ -8,11 +8,11 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = [
+    "BotKnowsConfig",
+    "LLMSettings",
     "MongoSettings",
     "Neo4jSettings",
     "RedisSettings",
-    "LLMSettings",
-    "BotKnowsConfig",
 ]
 
 

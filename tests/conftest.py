@@ -3,8 +3,9 @@
 This module provides pytest fixtures used across all tests.
 """
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from bot_knows.models.chat import ChatCategory, ChatDTO
 from bot_knows.models.ingest import ChatIngest, IngestMessage

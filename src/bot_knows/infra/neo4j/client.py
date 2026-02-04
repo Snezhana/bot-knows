@@ -5,7 +5,7 @@ This module provides an async Neo4j client wrapper.
 
 from typing import Any
 
-from neo4j import AsyncGraphDatabase, AsyncDriver
+from neo4j import AsyncDriver, AsyncGraphDatabase
 
 from bot_knows.config import Neo4jSettings
 from bot_knows.logging import get_logger

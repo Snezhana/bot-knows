@@ -13,9 +13,9 @@ from bot_knows.logging import get_logger
 from bot_knows.models.topic import TopicDTO
 
 __all__ = [
-    "DedupService",
     "DedupAction",
     "DedupResult",
+    "DedupService",
 ]
 
 logger = get_logger(__name__)
@@ -65,7 +65,7 @@ class DedupService:
         storage: StorageInterface,
         high_threshold: float = 0.92,
         low_threshold: float = 0.80,
-    ):
+    ) -> None:
         """Initialize service with dependencies.
 
         Args:

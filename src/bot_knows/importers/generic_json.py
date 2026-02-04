@@ -3,7 +3,8 @@
 This module provides a flexible adapter for custom JSON formats.
 """
 
-from typing import Any, Callable, override
+from collections.abc import Callable
+from typing import Any, override
 
 from bot_knows.importers.base import ChatImportAdapter
 from bot_knows.importers.registry import ImportAdapterRegistry
@@ -57,7 +58,7 @@ class GenericJSONAdapter(ChatImportAdapter):
         title_key: str = "title",
         role_mapping: dict[str, str] | None = None,
         content_extractor: Callable[[Any], str] | None = None,
-    ):
+    ) -> None:
         """Initialize adapter with field mappings.
 
         Args:
@@ -143,10 +144,8 @@ class GenericJSONAdapter(ChatImportAdapter):
 
         raw_messages = chat.get(self._messages_key, [])
         messages = [
-            msg for msg in (
-                self._parse_message(m, chat_id, timestamp)
-                for m in raw_messages
-            )
+            msg
+            for msg in (self._parse_message(m, chat_id, timestamp) for m in raw_messages)
             if msg is not None
         ]
 
@@ -182,13 +181,15 @@ class GenericJSONAdapter(ChatImportAdapter):
             msgs.sort(key=lambda m: m.timestamp)
             min_timestamp = msgs[0].timestamp if msgs else 0
 
-            chats.append(ChatIngest(
-                source="generic_json",
-                imported_chat_timestamp=min_timestamp,
-                title=None,
-                messages=msgs,
-                conversation_id=chat_id,
-            ))
+            chats.append(
+                ChatIngest(
+                    source="generic_json",
+                    imported_chat_timestamp=min_timestamp,
+                    title=None,
+                    messages=msgs,
+                    conversation_id=chat_id,
+                )
+            )
 
         return chats
 

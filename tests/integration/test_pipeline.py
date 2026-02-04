@@ -1,12 +1,10 @@
 """Integration tests for bot_knows pipeline."""
 
-import pytest
 from pathlib import Path
 
 from bot_knows.importers.chatgpt import ChatGPTAdapter
 from bot_knows.importers.claude import ClaudeAdapter
 from bot_knows.services.message_builder import MessageBuilder
-
 
 # Path to fixtures
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"

@@ -138,10 +138,7 @@ class ChatGPTAdapter(ChatImportAdapter):
         if isinstance(content_obj, dict):
             parts = content_obj.get("parts", [])
             # Filter and join text parts
-            text_parts = [
-                str(p) for p in parts
-                if p and isinstance(p, (str, int, float))
-            ]
+            text_parts = [str(p) for p in parts if p and isinstance(p, (str, int, float))]
             return " ".join(text_parts).strip()
 
         return ""

@@ -33,7 +33,7 @@ class MongoClient:
         await client.disconnect()
     """
 
-    def __init__(self, settings: MongoSettings):
+    def __init__(self, settings: MongoSettings) -> None:
         """Initialize client with settings.
 
         Args:

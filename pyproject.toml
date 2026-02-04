@@ -57,10 +57,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/bot-knows"
-Documentation = "https://github.com/yourusername/bot-knows#readme"
-Repository = "https://github.com/yourusername/bot-knows"
-Issues = "https://github.com/yourusername/bot-knows/issues"
+Homepage = "https://github.com/Snezhana/bot-knows"
+Documentation = "https://github.com/Snezhana/bot-knows#readme"
+Repository = "https://github.com/Snezhana/bot-knows"
+Issues = "https://github.com/Snezhana/bot-knows/issues"
 
 [build-system]
 requires = ["hatchling"]

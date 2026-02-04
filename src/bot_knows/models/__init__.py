@@ -10,13 +10,13 @@ from bot_knows.models.recall import RecallItemDTO, TopicRecallStateDTO
 from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
 __all__ = [
+    "ChatCategory",
+    "ChatDTO",
     "ChatIngest",
     "IngestMessage",
-    "ChatDTO",
-    "ChatCategory",
     "MessageDTO",
+    "RecallItemDTO",
     "TopicDTO",
     "TopicEvidenceDTO",
-    "RecallItemDTO",
     "TopicRecallStateDTO",
 ]

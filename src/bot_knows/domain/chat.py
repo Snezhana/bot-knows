@@ -3,8 +3,8 @@
 This module contains the internal Chat domain model with business logic.
 """
 
-from dataclasses import dataclass, field
 import time
+from dataclasses import dataclass, field
 
 from bot_knows.models.chat import ChatCategory, ChatDTO
 

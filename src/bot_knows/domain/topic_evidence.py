@@ -4,8 +4,8 @@ This module contains the internal TopicEvidence domain model.
 Evidence records are append-only and never modified.
 """
 
-from dataclasses import dataclass, field
 import time
+from dataclasses import dataclass, field
 
 from bot_knows.models.topic import TopicEvidenceDTO
 

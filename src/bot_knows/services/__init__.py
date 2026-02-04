@@ -11,14 +11,14 @@ from bot_knows.services.recall_service import CONTEXT_WEIGHTS, RecallService
 from bot_knows.services.topic_extraction import TopicCandidate, TopicExtractionService
 
 __all__ = [
+    "CONTEXT_WEIGHTS",
     "ChatProcessingService",
-    "RecallService",
-    "DedupService",
     "DedupAction",
     "DedupResult",
+    "DedupService",
     "GraphService",
     "MessageBuilder",
-    "TopicExtractionService",
+    "RecallService",
     "TopicCandidate",
-    "CONTEXT_WEIGHTS",
+    "TopicExtractionService",
 ]

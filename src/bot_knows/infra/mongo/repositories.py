@@ -28,7 +28,7 @@ class MongoStorageRepository:
     evidence, and recall states.
     """
 
-    def __init__(self, client: MongoClient):
+    def __init__(self, client: MongoClient) -> None:
         """Initialize repository with MongoDB client.
 
         Args:
@@ -122,9 +122,7 @@ class MongoStorageRepository:
             return results
 
         # Fetch all topics with embeddings
-        cursor = self._client.topics.find(
-            {"centroid_embedding": {"$exists": True, "$ne": []}}
-        )
+        cursor = self._client.topics.find({"centroid_embedding": {"$exists": True, "$ne": []}})
 
         async for doc in cursor:
             topic = self._doc_to_topic(doc)
@@ -180,9 +178,9 @@ class MongoStorageRepository:
 
     async def get_due_topics(self, threshold: float) -> list[TopicRecallStateDTO]:
         """Get topics due for recall (strength below threshold)."""
-        cursor = self._client.recall_states.find(
-            {"strength": {"$lt": threshold}}
-        ).sort("strength", 1)
+        cursor = self._client.recall_states.find({"strength": {"$lt": threshold}}).sort(
+            "strength", 1
+        )
         return [self._doc_to_recall_state(doc) async for doc in cursor]
 
     async def get_all_recall_states(self) -> list[TopicRecallStateDTO]:

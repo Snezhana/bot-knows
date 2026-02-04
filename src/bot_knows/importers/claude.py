@@ -148,9 +148,8 @@ class ClaudeAdapter(ChatImportAdapter):
         for block in blocks:
             if isinstance(block, str):
                 texts.append(block)
-            elif isinstance(block, dict):
-                if block.get("type") == "text":
-                    texts.append(block.get("text", ""))
+            elif isinstance(block, dict) and block.get("type") == "text":
+                texts.append(block.get("text", ""))
         return "\n".join(texts).strip()
 
     def _parse_timestamp(self, value: Any) -> int:

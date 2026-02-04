@@ -1,7 +1,7 @@
 """Mock MongoDB client for testing."""
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 
 class MockMongoCollection:
@@ -23,7 +23,7 @@ class MockMongoCollection:
         replacement: dict[str, Any],
         upsert: bool = False,
     ) -> MagicMock:
-        key = list(filter_.values())[0]
+        key = next(iter(filter_.values()))
         if key in self._documents or upsert:
             self._documents[key] = replacement
         result = MagicMock()
@@ -31,7 +31,7 @@ class MockMongoCollection:
         return result
 
     async def find_one(self, filter_: dict[str, Any]) -> dict[str, Any] | None:
-        key = list(filter_.values())[0]
+        key = next(iter(filter_.values()))
         return self._documents.get(key)
 
     async def count_documents(
@@ -39,7 +39,7 @@ class MockMongoCollection:
         filter_: dict[str, Any],
         limit: int = 0,
     ) -> int:
-        key = list(filter_.values())[0]
+        key = next(iter(filter_.values()))
         return 1 if key in self._documents else 0
 
     def find(self, filter_: dict[str, Any] | None = None) -> "MockCursor":
@@ -47,7 +47,8 @@ class MockMongoCollection:
             docs = list(self._documents.values())
         else:
             docs = [
-                d for d in self._documents.values()
+                d
+                for d in self._documents.values()
                 if all(d.get(k) == v for k, v in filter_.items())
             ]
         return MockCursor(docs)

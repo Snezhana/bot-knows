@@ -34,7 +34,7 @@ class GraphService:
         await service.add_chat_with_messages(chat, messages)
     """
 
-    def __init__(self, graph: GraphServiceInterface):
+    def __init__(self, graph: GraphServiceInterface) -> None:
         """Initialize service with graph interface.
 
         Args:

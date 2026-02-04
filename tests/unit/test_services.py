@@ -1,7 +1,8 @@
 """Unit tests for bot_knows services."""
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from bot_knows.models.chat import ChatCategory, ChatDTO
 from bot_knows.models.ingest import ChatIngest, IngestMessage

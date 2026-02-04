@@ -26,7 +26,7 @@ class OpenAIProvider:
     generation using OpenAI's API.
     """
 
-    def __init__(self, settings: LLMSettings):
+    def __init__(self, settings: LLMSettings) -> None:
         """Initialize OpenAI provider.
 
         Args:
@@ -76,10 +76,11 @@ class OpenAIProvider:
         last_pair: tuple[str, str],
     ) -> tuple[ChatCategory, list[str]]:
         """Classify chat and extract tags."""
-        system_prompt = """You are a chat classifier. Analyze the conversation samples and classify the chat.
+        system_prompt = """You are a chat classifier.
+        Analyze the conversation samples and classify the chat and assign tags.
 
 Categories: coding, research, writing, brainstorming, debugging, learning, general, other
-
+Tags: no strick - should be subcategroy of the category.
 Respond with JSON only:
 {"category": "category_name", "tags": ["tag1", "tag2"]}"""
 

@@ -31,8 +31,7 @@ class TopicDTO(BaseModel, frozen=True):
     topic_id: str = Field(description="Hash-based topic ID")
     canonical_name: str = Field(description="Canonical topic name")
     centroid_embedding: list[float] = Field(
-        default_factory=list,
-        description="Running centroid embedding"
+        default_factory=list, description="Running centroid embedding"
     )
     evidence_count: int = Field(default=0, description="Number of evidence records")
     importance: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -62,7 +61,7 @@ class TopicDTO(BaseModel, frozen=True):
             # Incremental update
             new_centroid = [
                 (old * n + new) / (n + 1)
-                for old, new in zip(self.centroid_embedding, new_embedding)
+                for old, new in zip(self.centroid_embedding, new_embedding, strict=False)
             ]
 
         return TopicDTO(

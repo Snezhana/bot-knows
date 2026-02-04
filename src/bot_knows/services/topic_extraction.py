@@ -13,8 +13,8 @@ from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 from bot_knows.utils.hashing import generate_evidence_id, generate_topic_id
 
 __all__ = [
-    "TopicExtractionService",
     "TopicCandidate",
+    "TopicExtractionService",
 ]
 
 logger = get_logger(__name__)
@@ -32,7 +32,7 @@ class TopicCandidate:
         confidence: float,
         embedding: list[float],
         source_message_id: str,
-    ):
+    ) -> None:
         self.extracted_name = extracted_name
         self.confidence = confidence
         self.embedding = embedding
@@ -54,7 +54,7 @@ class TopicExtractionService:
         self,
         llm: LLMInterface,
         embedding_service: EmbeddingServiceInterface,
-    ):
+    ) -> None:
         """Initialize service with dependencies.
 
         Args:
@@ -130,9 +130,7 @@ class TopicExtractionService:
         Returns:
             Tuple of (TopicDTO, TopicEvidenceDTO)
         """
-        name = canonical_name or await self._llm.normalize_topic_name(
-            candidate.extracted_name
-        )
+        name = canonical_name or await self._llm.normalize_topic_name(candidate.extracted_name)
         now = int(time.time())
 
         topic_id = generate_topic_id(name, candidate.source_message_id)

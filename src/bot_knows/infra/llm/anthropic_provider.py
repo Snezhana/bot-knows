@@ -30,7 +30,7 @@ class AnthropicProvider:
     Use OpenAI or another embedding provider for embeddings.
     """
 
-    def __init__(self, settings: LLMSettings):
+    def __init__(self, settings: LLMSettings) -> None:
         """Initialize Anthropic provider.
 
         Args:
@@ -47,10 +47,11 @@ class AnthropicProvider:
         last_pair: tuple[str, str],
     ) -> tuple[ChatCategory, list[str]]:
         """Classify chat and extract tags."""
-        system_prompt = """You are a chat classifier. Analyze the conversation samples and classify the chat.
+        system_prompt = """You are a chat classifier.
+        Analyze the conversation samples and classify the chat and assign tags.
 
 Categories: coding, research, writing, brainstorming, debugging, learning, general, other
-
+Tags: no strick - should be subcategroy of the category.
 Respond with JSON only:
 {"category": "category_name", "tags": ["tag1", "tag2"]}"""
 

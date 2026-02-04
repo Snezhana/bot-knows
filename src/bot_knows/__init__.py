@@ -38,12 +38,9 @@ from bot_knows.config import (
     RedisSettings,
 )
 
-# Public DTOs
-from bot_knows.models.chat import ChatCategory, ChatDTO
-from bot_knows.models.ingest import ChatIngest, IngestMessage
-from bot_knows.models.message import MessageDTO
-from bot_knows.models.recall import RecallItemDTO, TopicRecallStateDTO
-from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
+# Import adapters
+from bot_knows.importers.base import ChatImportAdapter
+from bot_knows.importers.registry import ImportAdapterRegistry
 
 # Interfaces
 from bot_knows.interfaces.embedding import EmbeddingServiceInterface
@@ -52,43 +49,46 @@ from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.interfaces.recall import RecallServiceInterface
 from bot_knows.interfaces.storage import StorageInterface
 
-# Import adapters
-from bot_knows.importers.base import ChatImportAdapter
-from bot_knows.importers.registry import ImportAdapterRegistry
+# Public DTOs
+from bot_knows.models.chat import ChatCategory, ChatDTO
+from bot_knows.models.ingest import ChatIngest, IngestMessage
+from bot_knows.models.message import MessageDTO
+from bot_knows.models.recall import RecallItemDTO, TopicRecallStateDTO
+from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
 # Services
 from bot_knows.services.chat_processing import ChatProcessingService
 from bot_knows.services.recall_service import RecallService
 
 __all__ = [
-    # Version
-    "__version__",
     # Config
     "BotKnowsConfig",
-    "MongoSettings",
-    "Neo4jSettings",
-    "RedisSettings",
-    "LLMSettings",
+    "ChatCategory",
+    "ChatDTO",
+    # Importers
+    "ChatImportAdapter",
     # Models
     "ChatIngest",
-    "IngestMessage",
-    "ChatDTO",
-    "ChatCategory",
-    "MessageDTO",
-    "TopicDTO",
-    "TopicEvidenceDTO",
-    "RecallItemDTO",
-    "TopicRecallStateDTO",
+    # Services
+    "ChatProcessingService",
     # Interfaces
     "EmbeddingServiceInterface",
     "GraphServiceInterface",
-    "StorageInterface",
-    "RecallServiceInterface",
-    "LLMInterface",
-    # Importers
-    "ChatImportAdapter",
     "ImportAdapterRegistry",
-    # Services
-    "ChatProcessingService",
+    "IngestMessage",
+    "LLMInterface",
+    "LLMSettings",
+    "MessageDTO",
+    "MongoSettings",
+    "Neo4jSettings",
+    "RecallItemDTO",
     "RecallService",
+    "RecallServiceInterface",
+    "RedisSettings",
+    "StorageInterface",
+    "TopicDTO",
+    "TopicEvidenceDTO",
+    "TopicRecallStateDTO",
+    # Version
+    "__version__",
 ]

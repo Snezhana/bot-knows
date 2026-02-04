@@ -3,8 +3,8 @@
 This module contains the internal Message domain model.
 """
 
-from dataclasses import dataclass, field
 import time
+from dataclasses import dataclass, field
 
 from bot_knows.models.message import MessageDTO
 

@@ -31,7 +31,7 @@ class EmbeddingCache:
         redis_client: RedisClient,
         ttl: int = 86400,  # 24 hours
         prefix: str = "emb:",
-    ):
+    ) -> None:
         """Initialize embedding cache.
 
         Args:
@@ -127,7 +127,7 @@ class TopicCache:
         redis_client: RedisClient,
         ttl: int = 3600,  # 1 hour
         prefix: str = "topic:",
-    ):
+    ) -> None:
         """Initialize topic cache.
 
         Args:

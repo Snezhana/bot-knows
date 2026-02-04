@@ -14,17 +14,17 @@ from bot_knows.logging import get_logger
 from bot_knows.models.recall import RecallItemDTO, TopicRecallStateDTO
 
 __all__ = [
-    "RecallService",
     "CONTEXT_WEIGHTS",
+    "RecallService",
 ]
 
 logger = get_logger(__name__)
 
 # Context weights for reinforcement
 CONTEXT_WEIGHTS: dict[str, float] = {
-    "passive": 0.2,   # Passive read (background access)
-    "active": 0.6,    # Active query (user explicitly asked)
-    "recall": 1.0,    # Recall prompt (spaced repetition review)
+    "passive": 0.2,  # Passive read (background access)
+    "active": 0.6,  # Active query (user explicitly asked)
+    "recall": 1.0,  # Recall prompt (spaced repetition review)
 }
 
 
@@ -53,7 +53,7 @@ class RecallService:
         graph: GraphServiceInterface,
         stability_k: float = 0.1,
         semantic_boost: float = 0.1,
-    ):
+    ) -> None:
         """Initialize service with dependencies.
 
         Args:
@@ -215,12 +215,14 @@ class RecallService:
             # Calculate due score
             due_score = self._calculate_due_score(state)
 
-            items.append(RecallItemDTO(
-                topic=topic,
-                recall_state=state,
-                due_score=due_score,
-                related_topics=[r[0] for r in related],
-            ))
+            items.append(
+                RecallItemDTO(
+                    topic=topic,
+                    recall_state=state,
+                    due_score=due_score,
+                    related_topics=[r[0] for r in related],
+                )
+            )
 
         # Sort by due_score descending
         items.sort(key=lambda x: x.due_score, reverse=True)

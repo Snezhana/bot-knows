@@ -4,9 +4,9 @@ This module contains the internal Topic domain model with
 recall business logic including decay and reinforcement.
 """
 
-from dataclasses import dataclass, field
 import math
 import time
+from dataclasses import dataclass, field
 
 from bot_knows.models.topic import TopicDTO
 
@@ -47,7 +47,7 @@ class Topic:
         else:
             self.centroid_embedding = [
                 (old * n + new) / (n + 1)
-                for old, new in zip(self.centroid_embedding, new_embedding)
+                for old, new in zip(self.centroid_embedding, new_embedding, strict=False)
             ]
         self.evidence_count += 1
 

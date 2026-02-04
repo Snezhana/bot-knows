@@ -4,8 +4,6 @@ This module provides a registry for dynamically registering
 and looking up chat import adapters.
 """
 
-from typing import Type
-
 from bot_knows.importers.base import ChatImportAdapter
 
 __all__ = [
@@ -33,13 +31,13 @@ class ImportAdapterRegistry:
         chats = adapter.parse(raw_data)
     """
 
-    _adapters: dict[str, Type[ChatImportAdapter]] = {}
+    _adapters: dict[str, type[ChatImportAdapter]] = {}
 
     @classmethod
     def register(
         cls,
-        adapter_cls: Type[ChatImportAdapter],
-    ) -> Type[ChatImportAdapter]:
+        adapter_cls: type[ChatImportAdapter],
+    ) -> type[ChatImportAdapter]:
         """Register an adapter class.
 
         Can be used as a decorator or called directly.
@@ -64,7 +62,7 @@ class ImportAdapterRegistry:
         return adapter_cls
 
     @classmethod
-    def get(cls, source_name: str) -> Type[ChatImportAdapter]:
+    def get(cls, source_name: str) -> type[ChatImportAdapter]:
         """Get adapter class by source name.
 
         Args:
@@ -79,8 +77,7 @@ class ImportAdapterRegistry:
         if source_name not in cls._adapters:
             available = ", ".join(cls._adapters.keys()) or "none"
             raise KeyError(
-                f"No adapter registered for source: {source_name}. "
-                f"Available: {available}"
+                f"No adapter registered for source: {source_name}. Available: {available}"
             )
         return cls._adapters[source_name]
 

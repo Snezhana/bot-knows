@@ -9,8 +9,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 __all__ = [
-    "IngestMessage",
     "ChatIngest",
+    "IngestMessage",
 ]
 
 

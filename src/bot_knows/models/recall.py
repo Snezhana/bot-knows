@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field
 from bot_knows.models.topic import TopicDTO
 
 __all__ = [
-    "TopicRecallStateDTO",
     "RecallItemDTO",
+    "TopicRecallStateDTO",
 ]
 
 

@@ -12,7 +12,7 @@ from bot_knows.interfaces.storage import StorageInterface
 __all__ = [
     "EmbeddingServiceInterface",
     "GraphServiceInterface",
-    "StorageInterface",
-    "RecallServiceInterface",
     "LLMInterface",
+    "RecallServiceInterface",
+    "StorageInterface",
 ]
