@@ -4,11 +4,14 @@ This module provides the OpenAI implementation of LLM and embedding interfaces.
 """
 
 import json
+from typing import Any, Self
 
 import numpy as np
 from openai import AsyncOpenAI
 
 from bot_knows.config import LLMSettings
+from bot_knows.interfaces.embedding import EmbeddingServiceInterface
+from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatCategory
 
@@ -19,12 +22,14 @@ __all__ = [
 logger = get_logger(__name__)
 
 
-class OpenAIProvider:
+class OpenAIProvider(LLMInterface, EmbeddingServiceInterface):
     """OpenAI implementation of LLM and embedding interfaces.
 
     Provides chat classification, topic extraction, and embedding
     generation using OpenAI's API.
     """
+
+    config_class = LLMSettings
 
     def __init__(self, settings: LLMSettings) -> None:
         """Initialize OpenAI provider.
@@ -38,6 +43,35 @@ class OpenAIProvider:
         self._model = settings.model
         self._embedding_model = settings.embedding_model
         self._embedding_dimensions = settings.embedding_dimensions
+
+    @classmethod
+    async def from_config(cls, config: LLMSettings) -> Self:
+        """Factory method for BotKnows instantiation.
+
+        Args:
+            config: LLM settings
+
+        Returns:
+            OpenAIProvider instance
+        """
+        return cls(config)
+
+    @classmethod
+    async def from_dict(cls, config: dict[str, Any]) -> Self:
+        """Factory method for custom config dict.
+
+        Args:
+            config: Dictionary with LLM settings
+
+        Returns:
+            OpenAIProvider instance
+        """
+        settings = LLMSettings(**config)
+        return cls(settings)
+
+    async def close(self) -> None:
+        """Close resources (no-op for OpenAI)."""
+        pass
 
     # Embedding interface
     async def embed(self, text: str) -> list[float]:

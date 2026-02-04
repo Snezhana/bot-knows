@@ -4,7 +4,7 @@ This module defines the Protocol for LLM interactions
 including chat classification and topic extraction.
 """
 
-from typing import Protocol, runtime_checkable
+from typing import ClassVar, Protocol, runtime_checkable
 
 from bot_knows.models.chat import ChatCategory
 
@@ -20,6 +20,8 @@ class LLMInterface(Protocol):
     Implementations should provide methods for classifying chats
     and extracting topics from messages.
     """
+
+    config_class: ClassVar[type | None] = None
 
     async def classify_chat(
         self,

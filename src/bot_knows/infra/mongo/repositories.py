@@ -3,11 +3,13 @@
 This module provides repository implementations for MongoDB storage.
 """
 
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 
+from bot_knows.config import MongoSettings
 from bot_knows.infra.mongo.client import MongoClient
+from bot_knows.interfaces.storage import StorageInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatCategory, ChatDTO
 from bot_knows.models.message import MessageDTO
@@ -21,12 +23,14 @@ __all__ = [
 logger = get_logger(__name__)
 
 
-class MongoStorageRepository:
+class MongoStorageRepository(StorageInterface):
     """MongoDB implementation of StorageInterface.
 
     Provides CRUD operations for chats, messages, topics,
     evidence, and recall states.
     """
+
+    config_class = MongoSettings
 
     def __init__(self, client: MongoClient) -> None:
         """Initialize repository with MongoDB client.
@@ -35,6 +39,44 @@ class MongoStorageRepository:
             client: Connected MongoClient instance
         """
         self._client = client
+        self._owns_client = False
+
+    @classmethod
+    async def from_config(cls, config: MongoSettings) -> Self:
+        """Factory method for BotKnows instantiation.
+
+        Creates a MongoClient, connects, creates indexes, and returns repository.
+
+        Args:
+            config: MongoDB settings
+
+        Returns:
+            Connected MongoStorageRepository instance
+        """
+        client = MongoClient(config)
+        await client.connect()
+        await client.create_indexes()
+        instance = cls(client)
+        instance._owns_client = True
+        return instance
+
+    @classmethod
+    async def from_dict(cls, config: dict[str, Any]) -> Self:
+        """Factory method for custom config dict.
+
+        Args:
+            config: Dictionary with MongoDB settings
+
+        Returns:
+            Connected MongoStorageRepository instance
+        """
+        settings = MongoSettings(**config)
+        return await cls.from_config(settings)
+
+    async def close(self) -> None:
+        """Close owned resources."""
+        if self._owns_client and self._client:
+            await self._client.disconnect()
 
     # Chat operations
     async def save_chat(self, chat: ChatDTO) -> str:

@@ -22,13 +22,13 @@ class TestChatGPTImportPipeline:
 
         # First chat - Python async
         first_chat = chats[0]
-        assert first_chat.title == "Python Async Programming Help"
+        assert first_chat.title == "Toto Cutugno Insieme 1992"
         assert first_chat.source == "chatgpt"
         assert len(first_chat.messages) == 4
 
         # Second chat - Math question
         second_chat = chats[1]
-        assert second_chat.title == "Quick Math Question"
+        assert second_chat.title == "Moja zubarka prevod"
         assert len(second_chat.messages) == 2
 
     def test_message_pairing(self) -> None:
@@ -43,8 +43,8 @@ class TestChatGPTImportPipeline:
         assert len(messages) == 2
 
         # First pair
-        assert "async/await" in messages[0].user_content
-        assert "asyncio" in messages[0].assistant_content
+        assert "italian" in messages[0].user_content
+        assert "Toto Cutugno" in messages[0].assistant_content
 
         # Second pair
         assert "gather" in messages[1].user_content.lower()

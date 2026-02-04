@@ -9,86 +9,63 @@ This package provides tools for:
 
 Example usage:
     from bot_knows import (
-        BotKnowsConfig,
-        ChatProcessingService,
-        ImportAdapterRegistry,
-        ChatIngest,
+        BotKnows,
+        MongoStorageRepository,
+        Neo4jGraphRepository,
+        OpenAIProvider,
+        ChatGPTAdapter,
     )
 
-    # Load configuration
-    config = BotKnowsConfig()
-
-    # Import a ChatGPT export
-    adapter = ImportAdapterRegistry.create("chatgpt")
-    chats = adapter.parse_file("conversations.json")
-
-    # Process each chat
-    for chat_ingest in chats:
-        chat, is_new = await processor.process(chat_ingest)
+    # Simple usage - config loaded from .env automatically
+    async with BotKnows(
+        storage_class=MongoStorageRepository,
+        graphdb_class=Neo4jGraphRepository,
+        llm_class=OpenAIProvider,
+    ) as bk:
+        result = await bk.insert_chats("conversations.json", ChatGPTAdapter)
+        topics = await bk.get_chat_topics(chat_id)
 """
 
 __version__ = "0.1.0"
 
-# Configuration
-from bot_knows.config import (
-    BotKnowsConfig,
-    LLMSettings,
-    MongoSettings,
-    Neo4jSettings,
-    RedisSettings,
-)
+# Orchestrator
+from bot_knows.orchestrator import BotKnows, InsertResult
+
+# Implementations
+from bot_knows.infra.mongo.repositories import MongoStorageRepository
+from bot_knows.infra.neo4j.graph_repository import Neo4jGraphRepository
+from bot_knows.infra.llm.openai_provider import OpenAIProvider
+from bot_knows.infra.llm.anthropic_provider import AnthropicProvider
 
 # Import adapters
-from bot_knows.importers.base import ChatImportAdapter
-from bot_knows.importers.registry import ImportAdapterRegistry
+from bot_knows.importers.chatgpt import ChatGPTAdapter
+from bot_knows.importers.claude import ClaudeAdapter
+from bot_knows.importers.generic_json import GenericJSONAdapter
 
 # Interfaces
+from bot_knows.importers.base import ChatImportAdapter
 from bot_knows.interfaces.embedding import EmbeddingServiceInterface
 from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.interfaces.llm import LLMInterface
-from bot_knows.interfaces.recall import RecallServiceInterface
 from bot_knows.interfaces.storage import StorageInterface
 
-# Public DTOs
-from bot_knows.models.chat import ChatCategory, ChatDTO
-from bot_knows.models.ingest import ChatIngest, IngestMessage
-from bot_knows.models.message import MessageDTO
-from bot_knows.models.recall import RecallItemDTO, TopicRecallStateDTO
-from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
-
-# Services
-from bot_knows.services.chat_processing import ChatProcessingService
-from bot_knows.services.recall_service import RecallService
-
 __all__ = [
-    # Config
-    "BotKnowsConfig",
-    "ChatCategory",
-    "ChatDTO",
-    # Importers
-    "ChatImportAdapter",
-    # Models
-    "ChatIngest",
-    # Services
-    "ChatProcessingService",
+    # Orchestrator
+    "BotKnows",
+    "InsertResult",
+    # Implementations
+    "MongoStorageRepository",
+    "Neo4jGraphRepository",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    # Import adapters
+    "ChatGPTAdapter",
+    "ClaudeAdapter",
+    "GenericJSONAdapter",
     # Interfaces
+    "ChatImportAdapter",
     "EmbeddingServiceInterface",
     "GraphServiceInterface",
-    "ImportAdapterRegistry",
-    "IngestMessage",
     "LLMInterface",
-    "LLMSettings",
-    "MessageDTO",
-    "MongoSettings",
-    "Neo4jSettings",
-    "RecallItemDTO",
-    "RecallService",
-    "RecallServiceInterface",
-    "RedisSettings",
     "StorageInterface",
-    "TopicDTO",
-    "TopicEvidenceDTO",
-    "TopicRecallStateDTO",
-    # Version
-    "__version__",
 ]

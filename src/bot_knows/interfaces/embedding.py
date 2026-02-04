@@ -3,7 +3,7 @@
 This module defines the Protocol for embedding generation services.
 """
 
-from typing import Protocol, runtime_checkable
+from typing import ClassVar, Protocol, runtime_checkable
 
 __all__ = [
     "EmbeddingServiceInterface",
@@ -17,6 +17,8 @@ class EmbeddingServiceInterface(Protocol):
     Implementations should provide methods for generating
     embeddings from text and computing similarity scores.
     """
+
+    config_class: ClassVar[type | None] = None
 
     async def embed(self, text: str) -> list[float]:
         """Generate embedding vector for text.

@@ -3,7 +3,7 @@
 This module defines the Protocol for persistent storage operations.
 """
 
-from typing import Protocol, runtime_checkable
+from typing import ClassVar, Protocol, runtime_checkable
 
 from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
@@ -22,6 +22,8 @@ class StorageInterface(Protocol):
     Implementations should provide CRUD operations for
     chats, messages, topics, evidence, and recall state.
     """
+
+    config_class: ClassVar[type | None] = None
 
     # Chat operations
     async def save_chat(self, chat: ChatDTO) -> str:

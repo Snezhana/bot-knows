@@ -6,10 +6,12 @@ requires a separate embedding service.
 """
 
 import json
+from typing import Any, Self
 
 from anthropic import AsyncAnthropic
 
 from bot_knows.config import LLMSettings
+from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatCategory
 
@@ -20,7 +22,7 @@ __all__ = [
 logger = get_logger(__name__)
 
 
-class AnthropicProvider:
+class AnthropicProvider(LLMInterface):
     """Anthropic implementation of LLM interface.
 
     Provides chat classification and topic extraction using
@@ -29,6 +31,8 @@ class AnthropicProvider:
     Note: This provider does NOT implement embedding generation.
     Use OpenAI or another embedding provider for embeddings.
     """
+
+    config_class = LLMSettings
 
     def __init__(self, settings: LLMSettings) -> None:
         """Initialize Anthropic provider.
@@ -40,6 +44,35 @@ class AnthropicProvider:
         api_key = settings.api_key.get_secret_value() if settings.api_key else None
         self._client = AsyncAnthropic(api_key=api_key)
         self._model = settings.model or "claude-sonnet-4-20250514"
+
+    @classmethod
+    async def from_config(cls, config: LLMSettings) -> Self:
+        """Factory method for BotKnows instantiation.
+
+        Args:
+            config: LLM settings
+
+        Returns:
+            AnthropicProvider instance
+        """
+        return cls(config)
+
+    @classmethod
+    async def from_dict(cls, config: dict[str, Any]) -> Self:
+        """Factory method for custom config dict.
+
+        Args:
+            config: Dictionary with LLM settings
+
+        Returns:
+            AnthropicProvider instance
+        """
+        settings = LLMSettings(**config)
+        return cls(settings)
+
+    async def close(self) -> None:
+        """Close resources (no-op for Anthropic)."""
+        pass
 
     async def classify_chat(
         self,

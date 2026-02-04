@@ -86,7 +86,7 @@ def sample_ingest_messages() -> list[IngestMessage]:
         ),
         IngestMessage(
             role="assistant",
-            content="You can use async/await syntax with asyncio...",
+            content="which italian singer is singing United Europe",
             timestamp=1704067201,
             chat_id="test-conv-1",
         ),
@@ -111,7 +111,7 @@ def sample_chat_ingest(sample_ingest_messages: list[IngestMessage]) -> ChatInges
     return ChatIngest(
         source="test",
         imported_chat_timestamp=1704067200,
-        title="Python Async Programming",
+        title="Toto Cutugno Insieme 1992",
         messages=sample_ingest_messages,
         provider="test",
         conversation_id="test-conv-1",
@@ -123,7 +123,7 @@ def sample_chat_dto() -> ChatDTO:
     """Create sample ChatDTO."""
     return ChatDTO(
         id="abc123",
-        title="Python Async Programming",
+        title="Toto Cutugno Insieme 1992",
         source="test",
         category=ChatCategory.CODING,
         tags=["python", "asyncio"],

@@ -3,7 +3,7 @@
 This module defines the Protocol for graph database operations.
 """
 
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, ClassVar, Protocol, runtime_checkable
 
 from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
@@ -21,6 +21,8 @@ class GraphServiceInterface(Protocol):
     Implementations should provide methods for creating nodes,
     edges, and querying the knowledge graph.
     """
+
+    config_class: ClassVar[type | None] = None
 
     # Node operations
     async def create_chat_node(self, chat: ChatDTO) -> str:
@@ -175,5 +177,18 @@ class GraphServiceInterface(Protocol):
 
         Returns:
             List of evidence properties from edges
+        """
+        ...
+
+    async def get_chat_topics(self, chat_id: str) -> list[str]:
+        """Get all topic IDs associated with a chat's messages.
+
+        Traverses: (Chat)<-[:IS_PART_OF]-(Message)<-[:IS_SUPPORTED_BY]-(Topic)
+
+        Args:
+            chat_id: Chat ID to query
+
+        Returns:
+            List of unique topic IDs
         """
         ...

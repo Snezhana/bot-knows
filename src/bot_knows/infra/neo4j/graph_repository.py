@@ -3,9 +3,11 @@
 This module provides the graph repository implementation for Neo4j.
 """
 
-from typing import Any
+from typing import Any, Self
 
+from bot_knows.config import Neo4jSettings
 from bot_knows.infra.neo4j.client import Neo4jClient
+from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
@@ -18,12 +20,14 @@ __all__ = [
 logger = get_logger(__name__)
 
 
-class Neo4jGraphRepository:
+class Neo4jGraphRepository(GraphServiceInterface):
     """Neo4j implementation of GraphServiceInterface.
 
     Provides graph operations for the knowledge base including
     node creation, edge creation, and graph queries.
     """
+
+    config_class = Neo4jSettings
 
     def __init__(self, client: Neo4jClient) -> None:
         """Initialize repository with Neo4j client.
@@ -32,6 +36,45 @@ class Neo4jGraphRepository:
             client: Connected Neo4jClient instance
         """
         self._client = client
+        self._owns_client = False
+
+    @classmethod
+    async def from_config(cls, config: Neo4jSettings) -> Self:
+        """Factory method for BotKnows instantiation.
+
+        Creates a Neo4jClient, connects, creates indexes/constraints, and returns repository.
+
+        Args:
+            config: Neo4j settings
+
+        Returns:
+            Connected Neo4jGraphRepository instance
+        """
+        client = Neo4jClient(config)
+        await client.connect()
+        await client.create_indexes()
+        await client.create_constraints()
+        instance = cls(client)
+        instance._owns_client = True
+        return instance
+
+    @classmethod
+    async def from_dict(cls, config: dict[str, Any]) -> Self:
+        """Factory method for custom config dict.
+
+        Args:
+            config: Dictionary with Neo4j settings
+
+        Returns:
+            Connected Neo4jGraphRepository instance
+        """
+        settings = Neo4jSettings(**config)
+        return await cls.from_config(settings)
+
+    async def close(self) -> None:
+        """Close owned resources."""
+        if self._owns_client and self._client:
+            await self._client.disconnect()
 
     # Node operations
     async def create_chat_node(self, chat: ChatDTO) -> str:
