@@ -99,7 +99,7 @@ class TopicExtractionService:
 
         # Create candidates
         candidates = []
-        for (name, confidence), embedding in zip(raw_topics, embeddings):
+        for (name, confidence), embedding in zip(raw_topics, embeddings, strict=False):
             candidate = TopicCandidate(
                 extracted_name=name,
                 confidence=confidence,

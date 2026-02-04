@@ -34,7 +34,7 @@ class Neo4jClient:
         await client.disconnect()
     """
 
-    def __init__(self, settings: Neo4jSettings):
+    def __init__(self, settings: Neo4jSettings) -> None:
         """Initialize client with settings.
 
         Args:

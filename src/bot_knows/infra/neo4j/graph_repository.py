@@ -25,7 +25,7 @@ class Neo4jGraphRepository:
     node creation, edge creation, and graph queries.
     """
 
-    def __init__(self, client: Neo4jClient):
+    def __init__(self, client: Neo4jClient) -> None:
         """Initialize repository with Neo4j client.
 
         Args:
