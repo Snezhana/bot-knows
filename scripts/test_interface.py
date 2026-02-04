@@ -21,11 +21,13 @@ async def main() -> None:
         graphdb_class=Neo4jGraphRepository,
         llm_class=OpenAIProvider,
     ) as bk:
-        fixture_path = Path(__file__).parent.parent / "tests" / "fixtures" / "claude_export.json"
+        # fixture_path = Path(__file__).parent.parent / "tests" / "fixtures" / "claude_export.json"
 
-        result = await bk.insert_chats(fixture_path, ClaudeAdapter)
-        # topics = await bk.get_chat_topics(chat_id)
-        print(result.chats_new, result.chats_skipped)
+        # result = await bk.insert_chats(fixture_path, ClaudeAdapter)
+        topics = await bk.get_topic_evidence(
+            "48a79885e74239cedf4fa97053d56034b35e56957ead7a9c100271a84854157e"
+        )
+        print(topics)
 
 
 if __name__ == "__main__":
