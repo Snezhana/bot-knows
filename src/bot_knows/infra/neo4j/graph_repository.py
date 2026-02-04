@@ -63,7 +63,9 @@ class Neo4jGraphRepository:
         query = """
         MERGE (m:Message {message_id: $message_id})
         SET m.chat_id = $chat_id,
-            m.created_on = $created_on
+            m.created_on = $created_on,
+            m.user_content = $user_content,
+            m.assistent_content = $assistent_content
         RETURN m.message_id as id
         """
         await self._client.execute_write(
@@ -72,6 +74,8 @@ class Neo4jGraphRepository:
                 "message_id": message.message_id,
                 "chat_id": message.chat_id,
                 "created_on": message.created_on,
+                "user_content": message.user_content,
+                "assistent_content": message.assistant_content,
             },
         )
         return message.message_id

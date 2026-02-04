@@ -58,11 +58,7 @@ class Neo4jClient:
 
         # Verify connection
         await self._driver.verify_connectivity()
-        logger.info(
-            "connected_to_neo4j",
-            uri=self._settings.uri,
-            database=self._settings.database,
-        )
+        logger.info("connected_to_neo4j", uri=self._settings.uri)
 
     async def disconnect(self) -> None:
         """Close connection to Neo4j."""
@@ -96,7 +92,7 @@ class Neo4jClient:
         Returns:
             List of result records as dicts
         """
-        async with self.driver.session(database=self._settings.database) as session:
+        async with self.driver.session() as session:
             result = await session.run(query, parameters or {})
             records = await result.data()
             return records
@@ -112,7 +108,7 @@ class Neo4jClient:
             query: Cypher query string
             parameters: Query parameters
         """
-        async with self.driver.session(database=self._settings.database) as session:
+        async with self.driver.session() as session:
             await session.run(query, parameters or {})
 
     async def create_indexes(self) -> None:

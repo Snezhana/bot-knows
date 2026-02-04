@@ -43,8 +43,7 @@ class Neo4jSettings(BaseSettings):
 
     uri: str = "bolt://localhost:7687"
     username: str = "neo4j"
-    password: SecretStr = SecretStr("password")
-    database: str = "neo4j"
+    password: SecretStr = SecretStr("")
 
 
 class RedisSettings(BaseSettings):
