@@ -1,39 +1,62 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Python application
+name: Python Application
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.13"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3  # ← use latest major (v3+ as of late 2025/2026; check market for current)
+        with:
+          enable-cache: true          # caches uv binary + global python installs
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+
+      # Optional: If you pin a specific Python version or want matrix testing later
+      # - name: Install Python
+      #   run: uv python install 3.13
+
+      - name: Sync locked dependencies
+        run: uv sync --frozen --all-extras  # --frozen = respect uv.lock exactly; --all-extras = include optional groups like [dev], [test]
+
+      # Alternative if you don't want dev/test extras for CI speed:
+      # run: uv sync --frozen
+
+      # If your project has no uv.lock yet (first time), you can do:
+      # uv sync  # generates/updates lockfile — but commit uv.lock!
+
+      - name: Check formatting with Ruff
+        run: uv run ruff format --check --diff .
+
+      - name: Lint with Ruff
+        run: uv run ruff check --output-format=github .
+
+      # One-liner style (common & convenient):
+      # - name: Ruff lint & format check
+      #   run: uv run ruff check --fix --exit-non-zero-on-fix --output-format=github . && uv run ruff format --check --diff .
+
+      - name: Run tests with pytest
+        run: uv run pytest
+
+        # With coverage (very recommended):
+        # run: uv run pytest --cov=your_package_name --cov-report=xml --cov-report=term-missing
+
+      # Optional: upload coverage
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     fail_ci_if_error: true
