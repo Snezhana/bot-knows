@@ -1,6 +1,6 @@
 [project]
 name = "bot-knows"
-version = "0.1.1"
+version = "0.1.2"
 description = "Framework-agnostic Python library for graph-backed personal knowledge bases from chat data"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -26,19 +26,6 @@ dependencies = [
     # Async
     "anyio>=4.7,<5.0",
 
-    # Infrastructure
-    "motor>=3.6,<4.0",
-    "neo4j>=5.27,<6.0",
-    "redis>=5.2,<6.0",
-
-    # Task Queue
-    "taskiq>=0.11,<1.0",
-    "taskiq-redis>=1.0,<2.0",
-
-    # LLM Providers
-    "openai>=1.59,<2.0",
-    "anthropic>=0.42,<1.0",
-
     # Utilities
     "structlog>=25.1,<26.0",
     "numpy>=2.2,<3.0",
@@ -55,6 +42,22 @@ dev = [
     "mongomock-motor>=0.0.32",
     "pre-commit>=4.0,<5.0",
 ]
+ # Infrastructure
+mongo = ["motor>=3.6,<4.0",]
+
+neo4j = ["neo4j>=5.27,<6.0",]
+
+redis = ["redis>=5.2,<6.0",]
+
+# Task Queue
+taskiq = [
+    "taskiq>=0.11,<1.0",
+    "taskiq-redis>=1.0,<2.0",]
+
+# LLM Providers
+openai = ["openai>=1.59,<2.0",]
+
+anthropic = ["anthropic>=0.42,<1.0",]
 
 [project.urls]
 Homepage = "https://github.com/Snezhana/bot-knows"

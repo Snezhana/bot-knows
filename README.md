@@ -32,6 +32,26 @@ Or with uv:
 uv add bot-knows
 ```
 
+### Optional Dependencies
+
+Install with optional dependencies for specific infrastructure:
+
+```bash
+# With pip - install specific extras
+pip install bot-knows[mongo,neo4j,openai]
+
+# With uv
+uv add bot-knows[mongo,neo4j,openai]
+```
+
+Available extras:
+- `mongo` - MongoDB storage (motor)
+- `neo4j` - Neo4j graph database
+- `redis` - Redis caching
+- `taskiq` - Task queue support
+- `openai` - OpenAI LLM provider
+- `anthropic` - Anthropic LLM provider
+
 ## Quick Start
 
 The `BotKnows` class is the main orchestrator that accepts implementation classes for storage, graph database, and LLM providers. Configuration is automatically loaded from environment variables.
@@ -217,6 +237,12 @@ async with BotKnows(...) as bk:
 ```bash
 # Install with dev dependencies
 uv sync --dev
+
+# Install with dev and optional dependencies
+uv sync --dev --extra mongo --extra neo4j --extra openai
+
+# Install all extras
+uv sync --dev --all-extras
 
 # Run tests
 uv run pytest

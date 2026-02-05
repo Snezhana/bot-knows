@@ -142,24 +142,20 @@ wheels = [
 
 [[package]]
 name = "bot-knows"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
-    { name = "anthropic" },
     { name = "anyio" },
-    { name = "motor" },
-    { name = "neo4j" },
     { name = "numpy" },
-    { name = "openai" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "redis" },
     { name = "structlog" },
-    { name = "taskiq" },
-    { name = "taskiq-redis" },
 ]
 
 [package.optional-dependencies]
+anthropic = [
+    { name = "anthropic" },
+]
 dev = [
     { name = "hypothesis" },
     { name = "mongomock-motor" },
@@ -169,6 +165,22 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+]
+mongo = [
+    { name = "motor" },
+]
+neo4j = [
+    { name = "neo4j" },
+]
+openai = [
+    { name = "openai" },
+]
+redis = [
+    { name = "redis" },
+]
+taskiq = [
+    { name = "taskiq" },
+    { name = "taskiq-redis" },
 ]
 
 [package.dev-dependencies]
@@ -185,28 +197,28 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anthropic", specifier = ">=0.42,<1.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.42,<1.0" },
     { name = "anyio", specifier = ">=4.7,<5.0" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.100,<7.0" },
     { name = "mongomock-motor", marker = "extra == 'dev'", specifier = ">=0.0.32" },
-    { name = "motor", specifier = ">=3.6,<4.0" },
+    { name = "motor", marker = "extra == 'mongo'", specifier = ">=3.6,<4.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.14,<2.0" },
-    { name = "neo4j", specifier = ">=5.27,<6.0" },
+    { name = "neo4j", marker = "extra == 'neo4j'", specifier = ">=5.27,<6.0" },
     { name = "numpy", specifier = ">=2.2,<3.0" },
-    { name = "openai", specifier = ">=1.59,<2.0" },
+    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.59,<2.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0,<5.0" },
     { name = "pydantic", specifier = ">=2.10,<3.0" },
     { name = "pydantic-settings", specifier = ">=2.6,<3.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3,<9.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25,<1.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.0,<7.0" },
-    { name = "redis", specifier = ">=5.2,<6.0" },
+    { name = "redis", marker = "extra == 'redis'", specifier = ">=5.2,<6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9,<1.0" },
     { name = "structlog", specifier = ">=25.1,<26.0" },
-    { name = "taskiq", specifier = ">=0.11,<1.0" },
-    { name = "taskiq-redis", specifier = ">=1.0,<2.0" },
+    { name = "taskiq", marker = "extra == 'taskiq'", specifier = ">=0.11,<1.0" },
+    { name = "taskiq-redis", marker = "extra == 'taskiq'", specifier = ">=1.0,<2.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "mongo", "neo4j", "redis", "taskiq", "openai", "anthropic"]
 
 [package.metadata.requires-dev]
 dev = [
