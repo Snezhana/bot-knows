@@ -26,8 +26,7 @@ class GraphService:
     - (Message)-[:IS_PART_OF]->(Chat)
     - (Message)-[:FOLLOWS_AFTER]->(Message)
     - (Topic)-[:IS_SUPPORTED_BY {evidence}]->(Message)
-    - (Topic)-[:POTENTIALLY_DUPLICATE_OF {similarity}]->(Topic)
-    - (Topic)-[:RELATES_TO {type, weight}]->(Topic)
+    - (Topic)-[:RELATES_TO {similarity}]->(Topic)
 
     Example:
         service = GraphService(graph_interface)
@@ -152,52 +151,23 @@ class GraphService:
             evidence_id=evidence.evidence_id,
         )
 
-    async def create_potential_duplicate_link(
-        self,
-        new_topic_id: str,
-        existing_topic_id: str,
-        similarity: float,
-    ) -> None:
-        """Create POTENTIALLY_DUPLICATE_OF edge between topics.
-
-        Args:
-            new_topic_id: New topic ID
-            existing_topic_id: Existing similar topic ID
-            similarity: Similarity score
-        """
-        await self._graph.create_potentially_duplicate_of_edge(
-            topic_id=new_topic_id,
-            existing_topic_id=existing_topic_id,
-            similarity=similarity,
-        )
-
-        logger.debug(
-            "potential_duplicate_link_created",
-            new_topic=new_topic_id,
-            existing_topic=existing_topic_id,
-            similarity=similarity,
-        )
-
     async def create_topic_relation(
         self,
         topic_id: str,
         related_topic_id: str,
-        relation_type: str,
-        weight: float,
+        similatiry: float,
     ) -> None:
         """Create RELATES_TO edge between topics.
 
         Args:
             topic_id: Source topic ID
             related_topic_id: Related topic ID
-            relation_type: Type of relationship
-            weight: Relationship strength (0.0-1.0)
+            similatiry: Topics similatiry (0.0-1.0)
         """
         await self._graph.create_relates_to_edge(
             topic_id=topic_id,
             related_topic_id=related_topic_id,
-            relation_type=relation_type,
-            weight=weight,
+            similarity=similatiry,
         )
 
     async def get_related_topics(
@@ -212,6 +182,6 @@ class GraphService:
             limit: Maximum results
 
         Returns:
-            List of (topic_id, weight) tuples
+            List of (topic_id, similarity) tuples
         """
         return await self._graph.get_related_topics(topic_id, limit)

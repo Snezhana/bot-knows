@@ -106,35 +106,18 @@ class GraphServiceInterface(Protocol):
         """
         ...
 
-    async def create_potentially_duplicate_of_edge(
-        self,
-        topic_id: str,
-        existing_topic_id: str,
-        similarity: float,
-    ) -> None:
-        """Create POTENTIALLY_DUPLICATE_OF edge between topics.
-
-        Args:
-            topic_id: New topic ID
-            existing_topic_id: Existing similar topic ID
-            similarity: Similarity score between topics
-        """
-        ...
-
     async def create_relates_to_edge(
         self,
         topic_id: str,
         related_topic_id: str,
-        relation_type: str,
-        weight: float,
+        similarity: str,
     ) -> None:
         """Create RELATES_TO edge between topics.
 
         Args:
             topic_id: Source topic ID
             related_topic_id: Related topic ID
-            relation_type: Type of relationship
-            weight: Relationship weight (0.0 - 1.0)
+            similarity: Topics similarity (0.0 - 1.0)
         """
         ...
 
@@ -162,7 +145,7 @@ class GraphServiceInterface(Protocol):
             limit: Maximum number of results
 
         Returns:
-            List of (topic_id, weight) tuples
+            List of (topic_id, similarity) tuples
         """
         ...
 

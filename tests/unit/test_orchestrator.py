@@ -149,17 +149,10 @@ class MockGraphImpl(GraphServiceInterface):
     ) -> None:
         await self._mock.create_is_supported_by_edge(topic_id, message_id, evidence)
 
-    async def create_potentially_duplicate_of_edge(
-        self, topic_id: str, existing_topic_id: str, similarity: float
-    ) -> None:
-        await self._mock.create_potentially_duplicate_of_edge(
-            topic_id, existing_topic_id, similarity
-        )
-
     async def create_relates_to_edge(
-        self, topic_id: str, related_topic_id: str, relation_type: str, weight: float
+        self, topic_id: str, related_topic_id: str, similarity: float
     ) -> None:
-        await self._mock.create_relates_to_edge(topic_id, related_topic_id, relation_type, weight)
+        await self._mock.create_relates_to_edge(topic_id, related_topic_id, similarity)
 
     async def get_messages_for_chat(self, chat_id: str) -> list[Any]:
         return await self._mock.get_messages_for_chat(chat_id)

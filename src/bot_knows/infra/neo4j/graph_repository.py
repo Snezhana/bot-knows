@@ -209,50 +209,25 @@ class Neo4jGraphRepository(GraphServiceInterface):
             },
         )
 
-    async def create_potentially_duplicate_of_edge(
-        self,
-        topic_id: str,
-        existing_topic_id: str,
-        similarity: float,
-    ) -> None:
-        """Create POTENTIALLY_DUPLICATE_OF edge between topics."""
-        query = """
-        MATCH (t1:Topic {topic_id: $topic_id})
-        MATCH (t2:Topic {topic_id: $existing_topic_id})
-        MERGE (t1)-[r:POTENTIALLY_DUPLICATE_OF]->(t2)
-        SET r.similarity = $similarity
-        """
-        await self._client.execute_write(
-            query,
-            {
-                "topic_id": topic_id,
-                "existing_topic_id": existing_topic_id,
-                "similarity": similarity,
-            },
-        )
-
     async def create_relates_to_edge(
         self,
         topic_id: str,
         related_topic_id: str,
-        relation_type: str,
-        weight: float,
+        similarity: str,
     ) -> None:
         """Create RELATES_TO edge between topics."""
         query = """
         MATCH (t1:Topic {topic_id: $topic_id})
         MATCH (t2:Topic {topic_id: $related_topic_id})
         MERGE (t1)-[r:RELATES_TO]->(t2)
-        SET r.type = $relation_type,
-            r.weight = $weight
+        SET r.similarity = $similarity
         """
         await self._client.execute_write(
             query,
             {
                 "topic_id": topic_id,
                 "related_topic_id": related_topic_id,
-                "relation_type": relation_type,
-                "weight": weight,
+                "similarity": similarity,
             },
         )
 
@@ -285,15 +260,15 @@ class Neo4jGraphRepository(GraphServiceInterface):
         """Get topics related to a given topic."""
         query = """
         MATCH (t1:Topic {topic_id: $topic_id})-[r:RELATES_TO]->(t2:Topic)
-        RETURN t2.topic_id as topic_id, r.weight as weight
-        ORDER BY r.weight DESC
+        RETURN t2.topic_id as topic_id, r.similarity as similarity
+        ORDER BY r.similarity DESC
         LIMIT $limit
         """
         records = await self._client.execute_query(
             query,
             {"topic_id": topic_id, "limit": limit},
         )
-        return [(r["topic_id"], r["weight"]) for r in records]
+        return [(r["topic_id"], r["similarity"]) for r in records]
 
     async def get_topic_evidence(self, topic_id: str) -> list[dict[str, Any]]:
         """Get all evidence for a topic from IS_SUPPORTED_BY edges."""

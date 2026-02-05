@@ -56,14 +56,8 @@ class MessageBuilder:
 
         for msg in sorted_messages:
             if msg.role == "system":
-                # System messages become standalone with empty user_content
-                message_dto = self._create_message(
-                    chat_id=chat_id,
-                    user_content="",
-                    assistant_content=msg.content,
-                    timestamp=msg.timestamp,
-                )
-                messages.append(message_dto)
+                # Ignore System messages
+                continue
 
             elif msg.role == "user":
                 # If we have a pending user message, create it as standalone
