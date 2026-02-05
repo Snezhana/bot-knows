@@ -3,18 +3,22 @@
 This module provides an async MongoDB client wrapper using Motor.
 """
 
-from typing import Any
-
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection, AsyncIOMotorDatabase
+from typing import TYPE_CHECKING, Any
 
 from bot_knows.config import MongoSettings
 from bot_knows.logging import get_logger
+from bot_knows.utils.lazy_import import lazy_import
+
+if TYPE_CHECKING:
+    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 __all__ = [
     "MongoClient",
 ]
 
 logger = get_logger(__name__)
+
+get_async_motor = lazy_import("motor.motor_asyncio", "AsyncIOMotorClient")
 
 
 class MongoClient:
@@ -40,13 +44,14 @@ class MongoClient:
             settings: MongoDB connection settings
         """
         self._settings = settings
-        self._client: AsyncIOMotorClient[dict[str, Any]] | None = None
-        self._db: AsyncIOMotorDatabase[dict[str, Any]] | None = None
+        self._client = None
+        self._db = None
 
     async def connect(self) -> None:
         """Initialize connection to MongoDB."""
         if self._client is not None:
             return
+        AsyncIOMotorClient = get_async_motor()  # noqa: N806
 
         uri = self._settings.uri.get_secret_value()
         self._client = AsyncIOMotorClient(uri)
@@ -68,7 +73,7 @@ class MongoClient:
             logger.info("disconnected_from_mongodb")
 
     @property
-    def db(self) -> AsyncIOMotorDatabase[dict[str, Any]]:
+    def db(self) -> "AsyncIOMotorDatabase[dict[str, Any]]":
         """Get database instance.
 
         Raises:
@@ -78,33 +83,33 @@ class MongoClient:
             raise RuntimeError("MongoClient not connected. Call connect() first.")
         return self._db
 
-    def _collection(self, name: str) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def _collection(self, name: str) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get collection with optional prefix."""
         full_name = f"{self._settings.collection_prefix}{name}"
         return self.db[full_name]
 
     @property
-    def chats(self) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def chats(self) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get chats collection."""
         return self._collection("chats")
 
     @property
-    def messages(self) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def messages(self) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get messages collection."""
         return self._collection("messages")
 
     @property
-    def topics(self) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def topics(self) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get topics collection."""
         return self._collection("topics")
 
     @property
-    def evidence(self) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def evidence(self) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get topic_evidence collection."""
         return self._collection("topic_evidence")
 
     @property
-    def recall_states(self) -> AsyncIOMotorCollection[dict[str, Any]]:
+    def recall_states(self) -> "AsyncIOMotorCollection[dict[str, Any]]":
         """Get recall_states collection."""
         return self._collection("recall_states")
 

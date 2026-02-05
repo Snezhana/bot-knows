@@ -5,18 +5,22 @@ Redis is used for caching and is optional - if not configured,
 caching will be disabled gracefully.
 """
 
-from typing import Any
-
-from redis.asyncio import Redis
+from typing import TYPE_CHECKING, Any
 
 from bot_knows.config import RedisSettings
 from bot_knows.logging import get_logger
+from bot_knows.utils.lazy_import import lazy_import
+
+if TYPE_CHECKING:
+    from redis.asyncio import Redis
 
 __all__ = [
     "RedisClient",
 ]
 
 logger = get_logger(__name__)
+
+get_async_redis = lazy_import("redis.asyncio", "Redis")
 
 
 class RedisClient:
@@ -41,7 +45,7 @@ class RedisClient:
             settings: Redis connection settings
         """
         self._settings = settings
-        self._redis: Redis | None = None  # type: ignore[type-arg]
+        self._redis = None  # type: ignore[type-arg]
         self._connected = False
 
     @property
@@ -68,6 +72,7 @@ class RedisClient:
             return False
 
         try:
+            Redis = get_async_redis()  # noqa: N806
             self._redis = Redis.from_url(
                 self._settings.url,  # type: ignore[arg-type]
                 decode_responses=True,
@@ -96,7 +101,7 @@ class RedisClient:
             logger.info("disconnected_from_redis")
 
     @property
-    def client(self) -> Redis | None:  # type: ignore[type-arg]
+    def client(self) -> "Redis | None":  # type: ignore[type-arg]
         """Get Redis client instance.
 
         Returns:

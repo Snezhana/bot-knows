@@ -7,19 +7,23 @@ import json
 from typing import Any, Self
 
 import numpy as np
-from openai import AsyncOpenAI
 
 from bot_knows.config import LLMSettings
 from bot_knows.interfaces.embedding import EmbeddingServiceInterface
 from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatCategory
+from bot_knows.utils.lazy_import import lazy_import
 
 __all__ = [
     "OpenAIProvider",
 ]
 
 logger = get_logger(__name__)
+
+
+# lazy import of optional packages
+get_async_openai = lazy_import("openai", "AsyncOpenAI")
 
 
 class OpenAIProvider(LLMInterface, EmbeddingServiceInterface):
@@ -37,6 +41,7 @@ class OpenAIProvider(LLMInterface, EmbeddingServiceInterface):
         Args:
             settings: LLM configuration settings
         """
+        AsyncOpenAI = get_async_openai()  # noqa: N806
         self._settings = settings
         api_key = settings.api_key.get_secret_value() if settings.api_key else None
         self._client = AsyncOpenAI(api_key=api_key)
