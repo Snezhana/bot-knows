@@ -1,6 +1,7 @@
 # bot-knows
 
 A framework-agnostic Python library for building graph-backed personal knowledge bases from chat data.
+Implemented with Claude Code (model: claude-opus-4-5).
 
 ## Features
 

@@ -1,7 +1,7 @@
 """Unit tests for BotKnows orchestrator."""
 
 from typing import Any, Self
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -141,9 +141,7 @@ class MockGraphImpl(GraphServiceInterface):
     async def create_is_part_of_edge(self, message_id: str, chat_id: str) -> None:
         await self._mock.create_is_part_of_edge(message_id, chat_id)
 
-    async def create_follows_after_edge(
-        self, message_id: str, previous_message_id: str
-    ) -> None:
+    async def create_follows_after_edge(self, message_id: str, previous_message_id: str) -> None:
         await self._mock.create_follows_after_edge(message_id, previous_message_id)
 
     async def create_is_supported_by_edge(
@@ -161,16 +159,12 @@ class MockGraphImpl(GraphServiceInterface):
     async def create_relates_to_edge(
         self, topic_id: str, related_topic_id: str, relation_type: str, weight: float
     ) -> None:
-        await self._mock.create_relates_to_edge(
-            topic_id, related_topic_id, relation_type, weight
-        )
+        await self._mock.create_relates_to_edge(topic_id, related_topic_id, relation_type, weight)
 
     async def get_messages_for_chat(self, chat_id: str) -> list[Any]:
         return await self._mock.get_messages_for_chat(chat_id)
 
-    async def get_related_topics(
-        self, topic_id: str, limit: int = 10
-    ) -> list[tuple[str, float]]:
+    async def get_related_topics(self, topic_id: str, limit: int = 10) -> list[tuple[str, float]]:
         return await self._mock.get_related_topics(topic_id, limit)
 
     async def get_topic_evidence(self, topic_id: str) -> list[dict[str, Any]]:
@@ -224,9 +218,7 @@ class MockLLMImpl(LLMInterface, EmbeddingServiceInterface):
     async def embed_batch(self, texts: list[str]) -> list[list[float]]:
         return await self._mock.embed_batch(texts)
 
-    async def similarity(
-        self, embedding1: list[float], embedding2: list[float]
-    ) -> float:
+    async def similarity(self, embedding1: list[float], embedding2: list[float]) -> float:
         return await self._mock.similarity(embedding1, embedding2)
 
 
@@ -434,9 +426,7 @@ class TestBotKnowsInsertChats:
         )
 
     @pytest.mark.asyncio
-    async def test_insert_chats_returns_result(
-        self, sample_chat_ingest: ChatIngest
-    ) -> None:
+    async def test_insert_chats_returns_result(self, sample_chat_ingest: ChatIngest) -> None:
         """Test that insert_chats returns InsertResult."""
         # Create mock adapter class
         mock_adapter_class = MagicMock()
@@ -457,9 +447,7 @@ class TestBotKnowsInsertChats:
             assert result.messages_created >= 1
 
     @pytest.mark.asyncio
-    async def test_insert_chats_skips_existing_chat(
-        self, sample_chat_ingest: ChatIngest
-    ) -> None:
+    async def test_insert_chats_skips_existing_chat(self, sample_chat_ingest: ChatIngest) -> None:
         """Test that existing chats are skipped."""
         mock_adapter_class = MagicMock()
         mock_adapter_instance = MagicMock()
@@ -519,9 +507,7 @@ class TestBotKnowsRetrievalMethods:
             assert isinstance(result, list)
             # Verify the mock was called
             assert isinstance(bk._storage, MockStorageImpl)
-            bk._storage._mock.get_messages_for_chat.assert_called_once_with(
-                "test-chat-id"
-            )
+            bk._storage._mock.get_messages_for_chat.assert_called_once_with("test-chat-id")
 
     @pytest.mark.asyncio
     async def test_get_related_topics(self) -> None:
@@ -535,9 +521,7 @@ class TestBotKnowsRetrievalMethods:
 
             assert isinstance(result, list)
             assert isinstance(bk._graph, MockGraphImpl)
-            bk._graph._mock.get_related_topics.assert_called_once_with(
-                "test-topic-id", 5
-            )
+            bk._graph._mock.get_related_topics.assert_called_once_with("test-topic-id", 5)
 
     @pytest.mark.asyncio
     async def test_get_chat_topics(self) -> None:
@@ -561,7 +545,7 @@ class TestBotKnowsRetrievalMethods:
             graphdb_class=MockGraphImpl,
             llm_class=MockLLMImpl,
         ) as bk:
-            result = await bk.get_recall_state("test-topic-id")
+            _ = await bk.get_recall_state("test-topic-id")
 
             assert isinstance(bk._storage, MockStorageImpl)
             bk._storage._mock.get_recall_state.assert_called_once_with("test-topic-id")

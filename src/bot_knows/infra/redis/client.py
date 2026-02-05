@@ -34,7 +34,7 @@ class RedisClient:
         await client.disconnect()
     """
 
-    def __init__(self, settings: RedisSettings):
+    def __init__(self, settings: RedisSettings) -> None:
         """Initialize client with settings.
 
         Args:

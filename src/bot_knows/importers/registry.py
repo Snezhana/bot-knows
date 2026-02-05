@@ -31,7 +31,7 @@ class ImportAdapterRegistry:
         chats = adapter.parse(raw_data)
     """
 
-    _adapters: dict[str, type[ChatImportAdapter]] = {}
+    _adapters: dict[str, type[ChatImportAdapter]] = {}  # noqa: RUF012
 
     @classmethod
     def register(

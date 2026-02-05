@@ -129,8 +129,10 @@ class Neo4jClient:
         """Create uniqueness constraints."""
         constraints = [
             "CREATE CONSTRAINT chat_id_unique IF NOT EXISTS FOR (c:Chat) REQUIRE c.id IS UNIQUE",
-            "CREATE CONSTRAINT message_id_unique IF NOT EXISTS FOR (m:Message) REQUIRE m.message_id IS UNIQUE",
-            "CREATE CONSTRAINT topic_id_unique IF NOT EXISTS FOR (t:Topic) REQUIRE t.topic_id IS UNIQUE",
+            "CREATE CONSTRAINT message_id_unique IF NOT EXISTS \
+                FOR (m:Message) REQUIRE m.message_id IS UNIQUE",
+            "CREATE CONSTRAINT topic_id_unique IF NOT EXISTS \
+                FOR (t:Topic) REQUIRE t.topic_id IS UNIQUE",
         ]
 
         for constraint_query in constraints:
