@@ -55,7 +55,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v3
 
-      - run: uv publish --index testpypi
+      - run: uv publish --publish-url https://test.pypi.org/legacy/
 
   publish-to-pypi:
     if: github.event.release.prerelease == false
