@@ -266,7 +266,7 @@ Importance and recall are incremented only.
 
 Optional:
 ```
-(Topic)-[:POTENTIALLY_DUPLICATE_OF]->(Topic)
+(Topic)-[:RELATES_TO]->(Topic)
 ```
 
 ---

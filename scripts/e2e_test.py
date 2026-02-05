@@ -465,16 +465,10 @@ class E2ETestRunner:
         )
         results["is_supported_by_edges"] = is_supported_by[0]["count"]
 
-        potentially_duplicate = await self.neo4j_client.execute_query(
-            "MATCH ()-[r:POTENTIALLY_DUPLICATE_OF]->() RETURN count(r) as count"
-        )
-        results["potentially_duplicate_edges"] = potentially_duplicate[0]["count"]
-
         print("\nRelationship counts:")
         print(f"  IS_PART_OF: {results['is_part_of_edges']}")
         print(f"  FOLLOWS_AFTER: {results['follows_after_edges']}")
         print(f"  IS_SUPPORTED_BY: {results['is_supported_by_edges']}")
-        print(f"  POTENTIALLY_DUPLICATE_OF: {results['potentially_duplicate_edges']}")
 
         # Sample query: Get topics for a chat
         sample_query = await self.neo4j_client.execute_query("""

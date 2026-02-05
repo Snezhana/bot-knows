@@ -27,9 +27,6 @@ class RelationType(StrEnum):
     IS_SUPPORTED_BY = "IS_SUPPORTED_BY"
     """(Topic)-[:IS_SUPPORTED_BY {evidence}]->(Message)"""
 
-    POTENTIALLY_DUPLICATE_OF = "POTENTIALLY_DUPLICATE_OF"
-    """(Topic)-[:POTENTIALLY_DUPLICATE_OF {similarity}]->(Topic)"""
-
     RELATES_TO = "RELATES_TO"
     """(Topic)-[:RELATES_TO {type, weight}]->(Topic)"""
 

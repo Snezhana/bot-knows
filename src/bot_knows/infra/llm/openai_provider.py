@@ -161,13 +161,14 @@ Assistant: {last_pair[1][:500]}"""
     ) -> list[tuple[str, float]]:
         """Extract topic candidates from message pair."""
         system_prompt = """Extract key topics from this conversation. Use concise canonical names.
-
+Assign confidence for each extracted topic.
 Respond with JSON only:
 {"topics": [{"name": "topic_name", "confidence": 0.9}]}
 
+The topic_name should be from 1-10 words.
 Extract 0-5 topics."""
 
-        user_prompt = f"User: {user_content[:1000]}\n\nAssistant: {assistant_content[:1000]}"
+        user_prompt = f"User: {user_content}\n\nAssistant: {assistant_content}"
 
         try:
             response = await self._client.chat.completions.create(

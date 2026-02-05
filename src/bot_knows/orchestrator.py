@@ -331,7 +331,7 @@ class BotKnows:
                 await self._storage.save_topic(topic)
                 await self._storage.append_evidence(evidence)
                 await self._graph_service.add_topic_with_evidence(topic, evidence)
-                await self._graph_service.create_potential_duplicate_link(
+                await self._graph_service.create_topic_relation(
                     topic.topic_id,
                     dedup_result.existing_topic.topic_id,
                     dedup_result.similarity,

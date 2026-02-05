@@ -28,7 +28,7 @@ class DedupAction(StrEnum):
     """Similarity >= high_threshold: same topic, merge evidence"""
 
     SOFT_MATCH = "soft_match"
-    """Similarity between low and high threshold: new topic + POTENTIALLY_DUPLICATE_OF edge"""
+    """Similarity between low and high threshold: new topic + RELATES_TO edge"""
 
     NEW = "new"
     """Similarity < low_threshold: completely new topic"""
@@ -49,7 +49,7 @@ class DedupService:
     Compares candidate topics against existing topics using
     embedding similarity to determine:
     - MERGE (>= 0.92): Same topic, link evidence to existing
-    - SOFT_MATCH (0.80-0.92): Create new topic with POTENTIALLY_DUPLICATE_OF edge
+    - SOFT_MATCH (0.80-0.92): Create new topic with RELATES_TO edge
     - NEW (< 0.80): Create completely new topic
 
     Example:
