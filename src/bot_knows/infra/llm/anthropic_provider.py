@@ -8,18 +8,20 @@ requires a separate embedding service.
 import json
 from typing import Any, Self
 
-from anthropic import AsyncAnthropic
-
 from bot_knows.config import LLMSettings
 from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.logging import get_logger
 from bot_knows.models.chat import ChatCategory
+from bot_knows.utils.lazy_import import lazy_import
 
 __all__ = [
     "AnthropicProvider",
 ]
 
 logger = get_logger(__name__)
+
+# lazy import of optional packages
+get_async_anthropic = lazy_import("anthropic", "AsyncAnthropic")
 
 
 class AnthropicProvider(LLMInterface):
@@ -40,6 +42,7 @@ class AnthropicProvider(LLMInterface):
         Args:
             settings: LLM configuration settings
         """
+        AsyncAnthropic = get_async_anthropic()  # noqa: N806
         self._settings = settings
         api_key = settings.api_key.get_secret_value() if settings.api_key else None
         self._client = AsyncAnthropic(api_key=api_key)

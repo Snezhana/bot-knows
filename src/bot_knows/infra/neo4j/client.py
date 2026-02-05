@@ -3,18 +3,21 @@
 This module provides an async Neo4j client wrapper.
 """
 
-from typing import Any
-
-from neo4j import AsyncDriver, AsyncGraphDatabase
+from typing import TYPE_CHECKING, Any
 
 from bot_knows.config import Neo4jSettings
 from bot_knows.logging import get_logger
+from bot_knows.utils.lazy_import import lazy_import
 
+if TYPE_CHECKING:
+    from neo4j import AsyncDriver
 __all__ = [
     "Neo4jClient",
 ]
 
 logger = get_logger(__name__)
+
+get_async_neo4j_db = lazy_import("neo4j", "AsyncGraphDatabase")
 
 
 class Neo4jClient:
@@ -41,13 +44,13 @@ class Neo4jClient:
             settings: Neo4j connection settings
         """
         self._settings = settings
-        self._driver: AsyncDriver | None = None
+        self._driver = None
 
     async def connect(self) -> None:
         """Initialize connection to Neo4j."""
         if self._driver is not None:
             return
-
+        AsyncGraphDatabase = get_async_neo4j_db()  # noqa: N806
         self._driver = AsyncGraphDatabase.driver(
             self._settings.uri,
             auth=(
@@ -68,7 +71,7 @@ class Neo4jClient:
             logger.info("disconnected_from_neo4j")
 
     @property
-    def driver(self) -> AsyncDriver:
+    def driver(self) -> "AsyncDriver":
         """Get driver instance.
 
         Raises:
