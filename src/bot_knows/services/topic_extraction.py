@@ -90,7 +90,7 @@ class TopicExtractionService:
             return []
 
         # Generate embeddings for all topics
-        topic_names = [name for name, _ in raw_topics]
+        topic_names = [name.lower() for name, _ in raw_topics]
         try:
             embeddings = await self._embedding.embed_batch(topic_names)
         except Exception as e:

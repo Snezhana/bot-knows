@@ -75,7 +75,7 @@ class LLMSettings(BaseSettings):
 
     provider: str = "openai"  # "openai" or "anthropic"
     api_key: SecretStr | None = None
-    model: str = "gpt-4o"
+    model: str = "gpt-4o-mini"
     embedding_model: str = "text-embedding-3-small"
     embedding_dimensions: int = 1536
 

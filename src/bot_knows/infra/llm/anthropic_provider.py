@@ -158,7 +158,7 @@ Extract 0-5 topics."""
         """Normalize topic name to canonical form."""
         normalized = extracted_name.strip().lower()
         normalized = " ".join(word.capitalize() for word in normalized.split())
-        return normalized[:100]
+        return normalized
 
     @staticmethod
     def _parse_json_response(content: str) -> dict:

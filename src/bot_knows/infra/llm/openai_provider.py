@@ -118,7 +118,8 @@ class OpenAIProvider(LLMInterface, EmbeddingServiceInterface):
         system_prompt = """You are a chat classifier.
         Analyze the conversation samples and classify the chat and assign tags.
 
-Categories: coding, research, writing, brainstorming, debugging, learning, general, other
+Categories: coding, research, writing, brainstorming, debugging,
+            learning, general, personal, music, culture, other
 Tags: no strick - should be subcategroy of the category.
 Respond with JSON only:
 {"category": "category_name", "tags": ["tag1", "tag2"]}"""
@@ -143,6 +144,7 @@ Assistant: {last_pair[1][:500]}"""
             )
             content = response.choices[0].message.content or "{}"
             result = json.loads(content)
+            logger.info(result)
             category_str = result.get("category", "general").lower()
             try:
                 category = ChatCategory(category_str)
@@ -165,7 +167,7 @@ Assign confidence for each extracted topic.
 Respond with JSON only:
 {"topics": [{"name": "topic_name", "confidence": 0.9}]}
 
-The topic_name should be from 1-10 words.
+The topic_name should be from 2-10 words.
 Extract 0-5 topics."""
 
         user_prompt = f"User: {user_content}\n\nAssistant: {assistant_content}"
@@ -182,6 +184,7 @@ Extract 0-5 topics."""
             )
             content = response.choices[0].message.content or "{}"
             result = json.loads(content)
+            logger.info(result)
             topics = result.get("topics", [])
             return [
                 (t["name"], float(t.get("confidence", 0.5)))
@@ -198,4 +201,4 @@ Extract 0-5 topics."""
         normalized = extracted_name.strip().lower()
         # Capitalize first letter of each word
         normalized = " ".join(word.capitalize() for word in normalized.split())
-        return normalized[:100]
+        return normalized
