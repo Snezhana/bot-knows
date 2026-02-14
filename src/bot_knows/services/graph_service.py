@@ -89,6 +89,51 @@ class GraphService:
             message_count=len(messages),
         )
 
+    async def add_messages_to_chat(
+        self,
+        chat_id: str,
+        messages: list[MessageDTO],
+        last_existing_message_id: str | None,
+    ) -> None:
+        """Add new messages to an existing chat in the graph.
+
+        Creates:
+        - Message nodes
+        - IS_PART_OF edges (Message -> Chat)
+        - FOLLOWS_AFTER edges (Message -> Message)
+
+        Args:
+            chat_id: Existing chat ID
+            messages: New messages to add (should be ordered)
+            last_existing_message_id: ID of the last existing message to chain from
+        """
+        previous_message_id = last_existing_message_id
+
+        for message in messages:
+            # Create message node
+            await self._graph.create_message_node(message)
+
+            # Create IS_PART_OF edge
+            await self._graph.create_is_part_of_edge(
+                message_id=message.message_id,
+                chat_id=chat_id,
+            )
+
+            # Create FOLLOWS_AFTER edge if we have a previous message
+            if previous_message_id:
+                await self._graph.create_follows_after_edge(
+                    message_id=message.message_id,
+                    previous_message_id=previous_message_id,
+                )
+
+            previous_message_id = message.message_id
+
+        logger.debug(
+            "messages_added_to_existing_chat",
+            chat_id=chat_id,
+            message_count=len(messages),
+        )
+
     async def add_topic_with_evidence(
         self,
         topic: TopicDTO,

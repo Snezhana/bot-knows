@@ -11,6 +11,7 @@ from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.interfaces.storage import StorageInterface
 from bot_knows.models.chat import ChatCategory, ChatDTO
 from bot_knows.models.ingest import ChatIngest, IngestMessage
+from bot_knows.models.message import MessageDTO
 from bot_knows.orchestrator import BotKnows, InsertResult
 
 
@@ -440,8 +441,10 @@ class TestBotKnowsInsertChats:
             assert result.messages_created >= 1
 
     @pytest.mark.asyncio
-    async def test_insert_chats_skips_existing_chat(self, sample_chat_ingest: ChatIngest) -> None:
-        """Test that existing chats are skipped."""
+    async def test_insert_chats_skips_existing_chat_with_same_messages(
+        self, sample_chat_ingest: ChatIngest
+    ) -> None:
+        """Test that existing chats with same message count are skipped."""
         mock_adapter_class = MagicMock()
         mock_adapter_instance = MagicMock()
         mock_adapter_instance.parse.return_value = [sample_chat_ingest]
@@ -452,7 +455,7 @@ class TestBotKnowsInsertChats:
             graphdb_class=MockGraphImpl,
             llm_class=MockLLMImpl,
         ) as bk:
-            # Simulate existing chat by patching the storage mock
+            # Simulate existing chat
             assert isinstance(bk._storage, MockStorageImpl)
             bk._storage._mock.get_chat.return_value = ChatDTO(
                 id="existing",
@@ -462,12 +465,159 @@ class TestBotKnowsInsertChats:
                 tags=[],
                 created_on=1704067200,
             )
+            # Return 1 existing message (same as import which has 1 paired message)
+            bk._storage._mock.get_messages_for_chat.return_value = [
+                MessageDTO(
+                    message_id="existing-msg-1",
+                    chat_id="existing",
+                    user_content="Hello",
+                    assistant_content="Hi there!",
+                    created_on=1704067200,
+                )
+            ]
 
             result = await bk.insert_chats({"test": "data"}, mock_adapter_class)
 
             assert result.chats_processed == 1
             assert result.chats_skipped == 1
             assert result.chats_new == 0
+            assert result.chats_updated == 0
+
+    @pytest.mark.asyncio
+    async def test_insert_chats_skips_existing_chat_with_more_messages(
+        self, sample_chat_ingest: ChatIngest
+    ) -> None:
+        """Test that existing chats with more messages than import are skipped."""
+        mock_adapter_class = MagicMock()
+        mock_adapter_instance = MagicMock()
+        mock_adapter_instance.parse.return_value = [sample_chat_ingest]
+        mock_adapter_class.return_value = mock_adapter_instance
+
+        async with BotKnows(
+            storage_class=MockStorageImpl,
+            graphdb_class=MockGraphImpl,
+            llm_class=MockLLMImpl,
+        ) as bk:
+            assert isinstance(bk._storage, MockStorageImpl)
+            bk._storage._mock.get_chat.return_value = ChatDTO(
+                id="existing",
+                title="Existing",
+                source="test",
+                category=ChatCategory.GENERAL,
+                tags=[],
+                created_on=1704067200,
+            )
+            # DB has 2 messages but import only has 1 (older export)
+            bk._storage._mock.get_messages_for_chat.return_value = [
+                MessageDTO(
+                    message_id="existing-msg-1",
+                    chat_id="existing",
+                    user_content="Hello",
+                    assistant_content="Hi there!",
+                    created_on=1704067200,
+                ),
+                MessageDTO(
+                    message_id="existing-msg-2",
+                    chat_id="existing",
+                    user_content="Follow up",
+                    assistant_content="Sure!",
+                    created_on=1704067300,
+                ),
+            ]
+
+            result = await bk.insert_chats({"test": "data"}, mock_adapter_class)
+
+            assert result.chats_processed == 1
+            assert result.chats_skipped == 1
+            assert result.chats_new == 0
+            assert result.chats_updated == 0
+
+    @pytest.mark.asyncio
+    async def test_insert_chats_updates_existing_chat_with_new_messages(self) -> None:
+        """Test that existing chats with fewer messages get incremental update."""
+        # Create ingest with 2 message pairs
+        chat_ingest = ChatIngest(
+            source="test",
+            imported_chat_timestamp=1704067200,
+            title="Test Chat",
+            messages=[
+                IngestMessage(
+                    role="user",
+                    content="Hello",
+                    timestamp=1704067200,
+                    chat_id="test-1",
+                ),
+                IngestMessage(
+                    role="assistant",
+                    content="Hi there!",
+                    timestamp=1704067201,
+                    chat_id="test-1",
+                ),
+                IngestMessage(
+                    role="user",
+                    content="New question",
+                    timestamp=1704067300,
+                    chat_id="test-1",
+                ),
+                IngestMessage(
+                    role="assistant",
+                    content="New answer",
+                    timestamp=1704067301,
+                    chat_id="test-1",
+                ),
+            ],
+            provider="test",
+            conversation_id="test-1",
+        )
+
+        mock_adapter_class = MagicMock()
+        mock_adapter_instance = MagicMock()
+        mock_adapter_instance.parse.return_value = [chat_ingest]
+        mock_adapter_class.return_value = mock_adapter_instance
+
+        async with BotKnows(
+            storage_class=MockStorageImpl,
+            graphdb_class=MockGraphImpl,
+            llm_class=MockLLMImpl,
+        ) as bk:
+            assert isinstance(bk._storage, MockStorageImpl)
+            assert isinstance(bk._graph, MockGraphImpl)
+
+            existing_chat = ChatDTO(
+                id="existing",
+                title="Existing",
+                source="test",
+                category=ChatCategory.GENERAL,
+                tags=[],
+                created_on=1704067200,
+            )
+            bk._storage._mock.get_chat.return_value = existing_chat
+
+            # DB has only 1 message, import has 2 (new messages available)
+            existing_message = MessageDTO(
+                message_id="existing-msg-1",
+                chat_id="existing",
+                user_content="Hello",
+                assistant_content="Hi there!",
+                created_on=1704067200,
+            )
+            bk._storage._mock.get_messages_for_chat.return_value = [existing_message]
+
+            result = await bk.insert_chats({"test": "data"}, mock_adapter_class)
+
+            assert result.chats_processed == 1
+            assert result.chats_new == 0
+            assert result.chats_skipped == 0
+            assert result.chats_updated == 1
+            assert result.messages_created >= 1  # At least 1 new message saved
+
+            # Verify save_message was called for new messages
+            bk._storage._mock.save_message.assert_called()
+
+            # Verify graph methods were called for new messages
+            bk._graph._mock.create_message_node.assert_called()
+            bk._graph._mock.create_is_part_of_edge.assert_called()
+            bk._graph._mock.create_follows_after_edge.assert_called()
 
     @pytest.mark.asyncio
     async def test_insert_chats_not_connected_raises_error(self) -> None:
@@ -593,6 +743,7 @@ class TestInsertResult:
 
         assert result.chats_processed == 0
         assert result.chats_new == 0
+        assert result.chats_updated == 0
         assert result.chats_skipped == 0
         assert result.messages_created == 0
         assert result.topics_created == 0
