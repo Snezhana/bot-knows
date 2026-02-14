@@ -5,6 +5,7 @@ This module defines the Protocol for graph database operations.
 
 from typing import Any, ClassVar, Protocol, runtime_checkable
 
+from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
 from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
@@ -24,12 +25,12 @@ class GraphServiceInterface(Protocol):
     config_class: ClassVar[type | None] = None
 
     # Node operations
-    async def create_message_node(self, message: MessageDTO) -> str:
+    async def create_message_node(self, message: MessageDTO, chat: ChatDTO) -> str:
         """Create a Message node in the graph.
 
         Args:
             message: Message data to store
-
+            chat: Chat metadata to store
         Returns:
             Node ID
         """

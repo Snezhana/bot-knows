@@ -119,7 +119,7 @@ class OpenAIProvider(LLMInterface, EmbeddingServiceInterface):
         Analyze the conversation samples and classify the chat and assign tags.
 
 Categories: coding, research, writing, brainstorming, debugging,
-            learning, general, personal, music, culture, other
+            learning, general, personal, music, culture, health, other
 Tags: no strick - should be subcategroy of the category.
 Respond with JSON only:
 {"category": "category_name", "tags": ["tag1", "tag2"]}"""
@@ -168,7 +168,7 @@ Respond with JSON only:
 {"topics": [{"name": "topic_name", "confidence": 0.9}]}
 
 The topic_name should be from 2-10 words.
-Extract 0-5 topics."""
+Extract 1-3 topics."""
 
         user_prompt = f"User: {user_content}\n\nAssistant: {assistant_content}"
 

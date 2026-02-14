@@ -285,13 +285,15 @@ class BotKnows:
         if is_new:
             # New chat - full processing
             result.chats_new += 1
-            messages = self._message_builder.build(chat_ingest.messages, chat)
+            messages = self._message_builder.build(
+                ingest_messages=chat_ingest.messages, chat_id=chat.id
+            )
 
             for message in messages:
                 await self._storage.save_message(message)
                 result.messages_created += 1
 
-            await self._graph_service.add_chat_with_messages(chat.id, messages)
+            await self._graph_service.add_chat_with_messages(chat, messages)
 
             for message in messages:
                 await self._process_message_topics(message, result)
@@ -314,7 +316,7 @@ class BotKnows:
         existing_message_ids = {msg.message_id for msg in existing_messages}
 
         # Build all messages from import
-        all_messages = self._message_builder.build(chat_ingest.messages, chat)
+        all_messages = self._message_builder.build(chat_ingest.messages, chat_id=chat.id)
 
         # If DB has same or more messages, skip
         if len(existing_messages) >= len(all_messages):
@@ -331,9 +333,7 @@ class BotKnows:
         result.chats_updated += 1
 
         # Find the last existing message ID for graph chaining
-        last_existing_message_id = (
-            existing_messages[-1].message_id if existing_messages else None
-        )
+        last_existing_message_id = existing_messages[-1].message_id if existing_messages else None
 
         # Save new messages to storage
         for message in new_messages:
@@ -341,9 +341,7 @@ class BotKnows:
             result.messages_created += 1
 
         # Add new messages to graph
-        await self._graph_service.add_messages_to_chat(
-            chat.id, new_messages, last_existing_message_id
-        )
+        await self._graph_service.add_messages_to_chat(chat, new_messages, last_existing_message_id)
 
         # Process topics for new messages
         for message in new_messages:
@@ -366,13 +364,15 @@ class BotKnows:
         assert self._storage is not None
         assert self._graph_service is not None
         assert self._recall_service is not None
-
+        logger.info("start _process_message_topics")
         candidates = await self._topic_extractor.extract(message)
 
         for candidate in candidates:
+            logger.info(candidate)
             dedup_result = await self._dedup_service.check_duplicate(candidate.embedding)
-
+            logger.info("check dup")
             if dedup_result.action == DedupAction.MERGE:
+                logger.info(DedupAction.MERGE)
                 assert dedup_result.existing_topic is not None
                 topic, evidence = await self._topic_extractor.create_evidence_for_existing(
                     candidate, dedup_result.existing_topic
@@ -383,6 +383,7 @@ class BotKnows:
                 result.topics_merged += 1
 
             elif dedup_result.action == DedupAction.SOFT_MATCH:
+                logger.info(DedupAction.SOFT_MATCH)
                 assert dedup_result.existing_topic is not None
                 topic, evidence = await self._topic_extractor.create_topic_and_evidence(candidate)
                 await self._storage.save_topic(topic)
@@ -397,6 +398,7 @@ class BotKnows:
                 result.topics_created += 1
 
             else:  # NEW
+                logger.info("new")
                 topic, evidence = await self._topic_extractor.create_topic_and_evidence(candidate)
                 await self._storage.save_topic(topic)
                 await self._storage.append_evidence(evidence)

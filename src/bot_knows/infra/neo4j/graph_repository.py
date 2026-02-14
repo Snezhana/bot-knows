@@ -9,6 +9,7 @@ from bot_knows.config import Neo4jSettings
 from bot_knows.infra.neo4j.client import Neo4jClient
 from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.logging import get_logger
+from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
 from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
@@ -76,7 +77,7 @@ class Neo4jGraphRepository(GraphServiceInterface):
             await self._client.disconnect()
 
     # Node operations
-    async def create_message_node(self, message: MessageDTO) -> str:
+    async def create_message_node(self, message: MessageDTO, chat: ChatDTO) -> str:
         """Create or update a Message node with chat metadata."""
         query = """
         MERGE (m:Message {message_id: $message_id})
@@ -95,10 +96,10 @@ class Neo4jGraphRepository(GraphServiceInterface):
             {
                 "message_id": message.message_id,
                 "chat_id": message.chat_id,
-                "chat_title": message.chat_title,
-                "source": message.source,
-                "category": message.category.value,
-                "tags": message.tags,
+                "chat_title": chat.title,
+                "source": chat.source,
+                "category": chat.category.value,
+                "tags": chat.tags,
                 "created_on": message.created_on,
                 "user_content": message.user_content,
                 "assistant_content": message.assistant_content,
@@ -219,17 +220,11 @@ class Neo4jGraphRepository(GraphServiceInterface):
         ORDER BY m.created_on
         """
         records = await self._client.execute_query(query, {"chat_id": chat_id})
-        # Import here to avoid circular imports
-        from bot_knows.models.chat import ChatCategory
 
         return [
             MessageDTO(
                 message_id=r["message_id"],
                 chat_id=r["chat_id"],
-                chat_title=r["chat_title"] or "",
-                source=r["source"] or "",
-                category=ChatCategory(r["category"]) if r["category"] else ChatCategory.GENERAL,
-                tags=r["tags"] or [],
                 created_on=r["created_on"],
                 user_content=r["user_content"] or "",
                 assistant_content=r["assistant_content"] or "",

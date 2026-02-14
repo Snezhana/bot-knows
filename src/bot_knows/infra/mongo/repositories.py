@@ -32,14 +32,26 @@ class MongoStorageRepository(StorageInterface):
 
     config_class = MongoSettings
 
-    def __init__(self, client: MongoClient) -> None:
+    def __init__(
+        self,
+        client: MongoClient,
+        vector_search_enabled: bool = False,
+        vector_search_index_name: str = "topic_embedding_index",
+        vector_search_num_candidates: int = 100,
+    ) -> None:
         """Initialize repository with MongoDB client.
 
         Args:
             client: Connected MongoClient instance
+            vector_search_enabled: Whether Atlas Vector Search is available
+            vector_search_index_name: Name of the vector search index
+            vector_search_num_candidates: Number of candidates for ANN search
         """
         self._client = client
         self._owns_client = False
+        self._vector_search_enabled = vector_search_enabled
+        self._vector_search_index_name = vector_search_index_name
+        self._vector_search_num_candidates = vector_search_num_candidates
 
     @classmethod
     async def from_config(cls, config: MongoSettings) -> Self:
@@ -53,10 +65,27 @@ class MongoStorageRepository(StorageInterface):
         Returns:
             Connected MongoStorageRepository instance
         """
+        from bot_knows.config import LLMSettings
+
         client = MongoClient(config)
         await client.connect()
         await client.create_indexes()
-        instance = cls(client)
+
+        # Try to create vector search index if enabled and on Atlas
+        vector_search_enabled = False
+        if config.vector_search_enabled and client.vector_search_available:
+            llm_settings = LLMSettings()
+            vector_search_enabled = await client.create_vector_search_index(
+                index_name=config.vector_search_index_name,
+                dimensions=llm_settings.embedding_dimensions,
+            )
+
+        instance = cls(
+            client,
+            vector_search_enabled=vector_search_enabled,
+            vector_search_index_name=config.vector_search_index_name,
+            vector_search_num_candidates=config.vector_search_num_candidates,
+        )
         instance._owns_client = True
         return instance
 
@@ -152,9 +181,91 @@ class MongoStorageRepository(StorageInterface):
     ) -> list[tuple[TopicDTO, float]]:
         """Find topics with similar embeddings.
 
-        Uses cosine similarity comparison against all topics.
-        For production, consider using MongoDB Atlas Vector Search
-        or a dedicated vector database.
+        Uses MongoDB Atlas Vector Search when available for efficient
+        approximate nearest neighbor (ANN) search. Falls back to
+        in-memory cosine similarity calculation for non-Atlas deployments.
+
+        Args:
+            embedding: Query embedding vector
+            threshold: Minimum similarity threshold (0.0 to 1.0)
+
+        Returns:
+            List of (TopicDTO, similarity) tuples, sorted by similarity desc
+        """
+        if not embedding:
+            return []
+
+        if self._vector_search_enabled:
+            return await self._find_similar_topics_vector_search(embedding, threshold)
+        return await self._find_similar_topics_fallback(embedding, threshold)
+
+    async def _find_similar_topics_vector_search(
+        self,
+        embedding: list[float],
+        threshold: float,
+    ) -> list[tuple[TopicDTO, float]]:
+        """Find similar topics using MongoDB Atlas Vector Search.
+
+        Uses $vectorSearch aggregation for efficient ANN search.
+        """
+        results: list[tuple[TopicDTO, float]] = []
+
+        # Build vector search aggregation pipeline
+        pipeline = [
+            {
+                "$vectorSearch": {
+                    "index": self._vector_search_index_name,
+                    "path": "centroid_embedding",
+                    "queryVector": embedding,
+                    "numCandidates": self._vector_search_num_candidates,
+                    "limit": self._vector_search_num_candidates,
+                }
+            },
+            {
+                "$addFields": {
+                    "similarity_score": {"$meta": "vectorSearchScore"}
+                }
+            },
+            {
+                "$match": {
+                    "similarity_score": {"$gte": threshold}
+                }
+            },
+            {
+                "$sort": {"similarity_score": -1}
+            },
+        ]
+
+        try:
+            cursor = self._client.topics.aggregate(pipeline)
+            async for doc in cursor:
+                topic = self._doc_to_topic(doc)
+                similarity = doc.get("similarity_score", 0.0)
+                results.append((topic, similarity))
+
+            logger.debug(
+                "vector_search_completed",
+                num_results=len(results),
+                threshold=threshold,
+            )
+            return results
+
+        except Exception as e:
+            # If vector search fails (index not ready, etc.), fall back
+            logger.warning(
+                "vector_search_failed_falling_back",
+                error=str(e),
+            )
+            return await self._find_similar_topics_fallback(embedding, threshold)
+
+    async def _find_similar_topics_fallback(
+        self,
+        embedding: list[float],
+        threshold: float,
+    ) -> list[tuple[TopicDTO, float]]:
+        """Find similar topics using in-memory cosine similarity.
+
+        Fallback implementation for non-Atlas deployments.
         """
         results: list[tuple[TopicDTO, float]] = []
         query_vec = np.array(embedding)
@@ -164,7 +275,9 @@ class MongoStorageRepository(StorageInterface):
             return results
 
         # Fetch all topics with embeddings
-        cursor = self._client.topics.find({"centroid_embedding": {"$exists": True, "$ne": []}})
+        cursor = self._client.topics.find(
+            {"centroid_embedding": {"$exists": True, "$ne": []}}
+        )
 
         async for doc in cursor:
             topic = self._doc_to_topic(doc)

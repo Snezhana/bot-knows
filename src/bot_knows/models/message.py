@@ -5,8 +5,6 @@ These models represent processed messages in the knowledge base.
 
 from pydantic import BaseModel, Field
 
-from bot_knows.models.chat import ChatCategory
-
 __all__ = [
     "MessageDTO",
 ]
@@ -22,10 +20,6 @@ class MessageDTO(BaseModel, frozen=True):
     Attributes:
         message_id: Deterministic message ID (hash-based)
         chat_id: Parent chat ID
-        chat_title: Title of the parent chat
-        source: Import source identifier (chatgpt, claude, etc.)
-        category: Chat category classification
-        tags: Free-form tags from classification
         user_content: User's message content (may be empty)
         assistant_content: Assistant's response content (may be empty)
         created_on: Message timestamp in epoch seconds
@@ -34,10 +28,6 @@ class MessageDTO(BaseModel, frozen=True):
 
     message_id: str = Field(description="Hash-based message ID")
     chat_id: str = Field(description="Parent chat ID")
-    chat_title: str = Field(description="Title of the parent chat")
-    source: str = Field(description="Import source (chatgpt, claude, etc.)")
-    category: ChatCategory = Field(default=ChatCategory.GENERAL)
-    tags: list[str] = Field(default_factory=list)
     user_content: str = Field(default="", description="User's message")
     assistant_content: str = Field(default="", description="Assistant's response")
     created_on: int = Field(description="Epoch seconds")

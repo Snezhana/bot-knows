@@ -136,10 +136,6 @@ def sample_message_dto() -> MessageDTO:
     return MessageDTO(
         message_id="msg123",
         chat_id="abc123",
-        chat_title="Async Python",
-        source="test",
-        category=ChatCategory.CODING,
-        tags=["python", "asyncio"],
         user_content="How do I write async code in Python?",
         assistant_content="You can use async/await syntax with asyncio...",
         created_on=1704067200,

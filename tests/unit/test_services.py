@@ -11,8 +11,6 @@ from bot_knows.services.chat_processing import ChatProcessingService
 from bot_knows.services.dedup_service import DedupAction, DedupService
 from bot_knows.services.message_builder import MessageBuilder
 
-# Note: ChatDTO fixture is provided by conftest.py
-
 
 class TestChatProcessingService:
     """Tests for ChatProcessingService."""
@@ -83,7 +81,7 @@ class TestChatProcessingService:
 class TestMessageBuilder:
     """Tests for MessageBuilder service."""
 
-    def test_build_paired_messages(self, sample_chat_dto: ChatDTO) -> None:
+    def test_build_paired_messages(self) -> None:
         messages = [
             IngestMessage(role="user", content="Hello", timestamp=1, chat_id="c1"),
             IngestMessage(role="assistant", content="Hi!", timestamp=2, chat_id="c1"),
@@ -92,43 +90,41 @@ class TestMessageBuilder:
         ]
 
         builder = MessageBuilder()
-        result = builder.build(messages, sample_chat_dto)
+        result = builder.build(messages, "c1")
 
         assert len(result) == 2
         assert result[0].user_content == "Hello"
         assert result[0].assistant_content == "Hi!"
-        assert result[0].chat_title == sample_chat_dto.title
-        assert result[0].source == sample_chat_dto.source
         assert result[1].user_content == "Bye"
         assert result[1].assistant_content == "Goodbye!"
 
-    def test_build_standalone_user_message(self, sample_chat_dto: ChatDTO) -> None:
+    def test_build_standalone_user_message(self) -> None:
         messages = [
             IngestMessage(role="user", content="Hello", timestamp=1, chat_id="c1"),
             IngestMessage(role="user", content="Anyone there?", timestamp=2, chat_id="c1"),
         ]
 
         builder = MessageBuilder()
-        result = builder.build(messages, sample_chat_dto)
+        result = builder.build(messages, "c1")
 
         # First user message becomes standalone, second has no assistant
         assert len(result) == 2
         assert result[0].user_content == "Hello"
         assert result[0].assistant_content == ""
 
-    def test_build_empty_input(self, sample_chat_dto: ChatDTO) -> None:
+    def test_build_empty_input(self) -> None:
         builder = MessageBuilder()
-        result = builder.build([], sample_chat_dto)
+        result = builder.build([], "c1")
         assert len(result) == 0
 
-    def test_build_sorts_by_timestamp(self, sample_chat_dto: ChatDTO) -> None:
+    def test_build_sorts_by_timestamp(self) -> None:
         messages = [
             IngestMessage(role="assistant", content="Hi!", timestamp=2, chat_id="c1"),
             IngestMessage(role="user", content="Hello", timestamp=1, chat_id="c1"),
         ]
 
         builder = MessageBuilder()
-        result = builder.build(messages, sample_chat_dto)
+        result = builder.build(messages, "c1")
 
         # Should pair correctly despite input order
         assert result[0].user_content == "Hello"

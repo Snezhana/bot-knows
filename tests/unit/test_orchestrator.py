@@ -130,8 +130,8 @@ class MockGraphImpl(GraphServiceInterface):
     async def create_chat_node(self, chat: Any) -> str:
         return await self._mock.create_chat_node(chat)
 
-    async def create_message_node(self, message: Any) -> str:
-        return await self._mock.create_message_node(message)
+    async def create_message_node(self, message: Any, chat: Any) -> str:
+        return await self._mock.create_message_node(message, chat)
 
     async def create_topic_node(self, topic: Any) -> str:
         return await self._mock.create_topic_node(topic)
@@ -177,7 +177,6 @@ class MockLLMImpl(LLMInterface, EmbeddingServiceInterface):
         self._mock = AsyncMock()
         self._mock.classify_chat.return_value = (ChatCategory.CODING, ["python"])
         self._mock.extract_topics.return_value = [("Python", 0.9)]
-        self._mock.normalize_topic_name.return_value = "Python"
         self._mock.embed.return_value = [0.1] * 1536
         self._mock.embed_batch.return_value = [[0.1] * 1536]
         self._mock.similarity.return_value = 0.95
@@ -202,9 +201,6 @@ class MockLLMImpl(LLMInterface, EmbeddingServiceInterface):
         self, user_content: str, assistant_content: str
     ) -> list[tuple[str, float]]:
         return await self._mock.extract_topics(user_content, assistant_content)
-
-    async def normalize_topic_name(self, extracted_name: str) -> str:
-        return await self._mock.normalize_topic_name(extracted_name)
 
     async def embed(self, text: str) -> list[float]:
         return await self._mock.embed(text)
@@ -470,9 +466,6 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-1",
                     chat_id="existing",
-                    chat_title="chat",
-                    source="source",
-                    category=ChatCategory.GENERAL,
                     user_content="Hello",
                     assistant_content="Hi there!",
                     created_on=1704067200,
@@ -515,9 +508,6 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-1",
                     chat_id="existing",
-                    chat_title="chat",
-                    source="source",
-                    category=ChatCategory.GENERAL,
                     user_content="Hello",
                     assistant_content="Hi there!",
                     created_on=1704067200,
@@ -525,9 +515,6 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-2",
                     chat_id="existing",
-                    chat_title="chat",
-                    source="source",
-                    category=ChatCategory.GENERAL,
                     user_content="Follow up",
                     assistant_content="Sure!",
                     created_on=1704067300,
@@ -606,9 +593,6 @@ class TestBotKnowsInsertChats:
             existing_message = MessageDTO(
                 message_id="existing-msg-1",
                 chat_id="existing",
-                chat_title="chat",
-                source="source",
-                category=ChatCategory.GENERAL,
                 user_content="Hello",
                 assistant_content="Hi there!",
                 created_on=1704067200,

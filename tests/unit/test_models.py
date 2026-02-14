@@ -135,9 +135,6 @@ class TestMessageDTO:
         msg = MessageDTO(
             message_id="msg1",
             chat_id="chat1",
-            chat_title="chat",
-            source="source",
-            category=ChatCategory.GENERAL,
             user_content="Hello",
             assistant_content="Hi there!",
             created_on=1704067200,
@@ -149,9 +146,6 @@ class TestMessageDTO:
         msg = MessageDTO(
             message_id="msg1",
             chat_id="chat1",
-            chat_title="chat",
-            source="source",
-            category=ChatCategory.GENERAL,
             created_on=1704067200,
         )
         assert msg.is_empty is True

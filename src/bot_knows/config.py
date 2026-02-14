@@ -30,6 +30,11 @@ class MongoSettings(BaseSettings):
     database: str = "bot_knows"
     collection_prefix: str = ""
 
+    # Vector search settings (MongoDB Atlas)
+    vector_search_enabled: bool = True
+    vector_search_index_name: str = "topic_embedding_index"
+    vector_search_num_candidates: int = 100
+
 
 class Neo4jSettings(BaseSettings):
     """Neo4j connection settings."""

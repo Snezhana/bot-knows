@@ -5,6 +5,7 @@ This module provides the service for managing the knowledge graph.
 
 from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.logging import get_logger
+from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
 from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
@@ -41,7 +42,7 @@ class GraphService:
 
     async def add_chat_with_messages(
         self,
-        chat_id: str,
+        chat: ChatDTO,
         messages: list[MessageDTO],
     ) -> None:
         """Add messages for a chat to the graph.
@@ -51,7 +52,7 @@ class GraphService:
         - FOLLOWS_AFTER edges (Message -> Message)
 
         Args:
-            chat_id: Chat ID for logging
+            chat: Chat to add
             messages: Messages to add (should be ordered)
         """
         # Create message nodes and edges
@@ -59,7 +60,7 @@ class GraphService:
 
         for message in messages:
             # Create message node
-            await self._graph.create_message_node(message)
+            await self._graph.create_message_node(message=message, chat=chat)
 
             # Create FOLLOWS_AFTER edge if not first message
             if previous_message_id:
@@ -72,13 +73,13 @@ class GraphService:
 
         logger.debug(
             "chat_added_to_graph",
-            chat_id=chat_id,
+            chat_id=chat.id,
             message_count=len(messages),
         )
 
     async def add_messages_to_chat(
         self,
-        chat_id: str,
+        chat: ChatDTO,
         messages: list[MessageDTO],
         last_existing_message_id: str | None,
     ) -> None:
@@ -89,7 +90,7 @@ class GraphService:
         - FOLLOWS_AFTER edges (Message -> Message)
 
         Args:
-            chat_id: Existing chat ID (for logging)
+            chat: Existing chat
             messages: New messages to add (should be ordered)
             last_existing_message_id: ID of the last existing message to chain from
         """
@@ -97,7 +98,7 @@ class GraphService:
 
         for message in messages:
             # Create message node
-            await self._graph.create_message_node(message)
+            await self._graph.create_message_node(message=message, chat=chat)
 
             # Create FOLLOWS_AFTER edge if we have a previous message
             if previous_message_id:
@@ -110,7 +111,7 @@ class GraphService:
 
         logger.debug(
             "messages_added_to_existing_chat",
-            chat_id=chat_id,
+            chat_id=chat.id,
             message_count=len(messages),
         )
 
