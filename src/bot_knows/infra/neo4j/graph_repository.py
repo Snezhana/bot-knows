@@ -9,7 +9,6 @@ from bot_knows.config import Neo4jSettings
 from bot_knows.infra.neo4j.client import Neo4jClient
 from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.logging import get_logger
-from bot_knows.models.chat import ChatDTO
 from bot_knows.models.message import MessageDTO
 from bot_knows.models.topic import TopicDTO, TopicEvidenceDTO
 
@@ -77,38 +76,18 @@ class Neo4jGraphRepository(GraphServiceInterface):
             await self._client.disconnect()
 
     # Node operations
-    async def create_chat_node(self, chat: ChatDTO) -> str:
-        """Create or update a Chat node."""
-        query = """
-        MERGE (c:Chat {id: $id})
-        SET c.title = $title,
-            c.source = $source,
-            c.category = $category,
-            c.tags = $tags,
-            c.created_on = $created_on
-        RETURN c.id as id
-        """
-        await self._client.execute_write(
-            query,
-            {
-                "id": chat.id,
-                "title": chat.title,
-                "source": chat.source,
-                "category": chat.category.value,
-                "tags": chat.tags,
-                "created_on": chat.created_on,
-            },
-        )
-        return chat.id
-
     async def create_message_node(self, message: MessageDTO) -> str:
-        """Create or update a Message node."""
+        """Create or update a Message node with chat metadata."""
         query = """
         MERGE (m:Message {message_id: $message_id})
         SET m.chat_id = $chat_id,
+            m.chat_title = $chat_title,
+            m.source = $source,
+            m.category = $category,
+            m.tags = $tags,
             m.created_on = $created_on,
             m.user_content = $user_content,
-            m.assistent_content = $assistent_content
+            m.assistant_content = $assistant_content
         RETURN m.message_id as id
         """
         await self._client.execute_write(
@@ -116,9 +95,13 @@ class Neo4jGraphRepository(GraphServiceInterface):
             {
                 "message_id": message.message_id,
                 "chat_id": message.chat_id,
+                "chat_title": message.chat_title,
+                "source": message.source,
+                "category": message.category.value,
+                "tags": message.tags,
                 "created_on": message.created_on,
                 "user_content": message.user_content,
-                "assistent_content": message.assistant_content,
+                "assistant_content": message.assistant_content,
             },
         )
         return message.message_id
@@ -148,18 +131,6 @@ class Neo4jGraphRepository(GraphServiceInterface):
         await self.create_topic_node(topic)
 
     # Edge operations
-    async def create_is_part_of_edge(self, message_id: str, chat_id: str) -> None:
-        """Create IS_PART_OF edge: (Message)-[:IS_PART_OF]->(Chat)."""
-        query = """
-        MATCH (m:Message {message_id: $message_id})
-        MATCH (c:Chat {id: $chat_id})
-        MERGE (m)-[:IS_PART_OF]->(c)
-        """
-        await self._client.execute_write(
-            query,
-            {"message_id": message_id, "chat_id": chat_id},
-        )
-
     async def create_follows_after_edge(
         self,
         message_id: str,
@@ -233,21 +204,35 @@ class Neo4jGraphRepository(GraphServiceInterface):
 
     # Query operations
     async def get_messages_for_chat(self, chat_id: str) -> list[MessageDTO]:
-        """Get all messages in a chat, ordered by FOLLOWS_AFTER."""
-        # Get messages ordered by created_on since FOLLOWS_AFTER may not exist
+        """Get all messages in a chat, ordered by created_on."""
         query = """
-        MATCH (m:Message)-[:IS_PART_OF]->(c:Chat {id: $chat_id})
+        MATCH (m:Message {chat_id: $chat_id})
         RETURN m.message_id as message_id,
                m.chat_id as chat_id,
-               m.created_on as created_on
+               m.chat_title as chat_title,
+               m.source as source,
+               m.category as category,
+               m.tags as tags,
+               m.created_on as created_on,
+               m.user_content as user_content,
+               m.assistant_content as assistant_content
         ORDER BY m.created_on
         """
         records = await self._client.execute_query(query, {"chat_id": chat_id})
+        # Import here to avoid circular imports
+        from bot_knows.models.chat import ChatCategory
+
         return [
             MessageDTO(
                 message_id=r["message_id"],
                 chat_id=r["chat_id"],
+                chat_title=r["chat_title"] or "",
+                source=r["source"] or "",
+                category=ChatCategory(r["category"]) if r["category"] else ChatCategory.GENERAL,
+                tags=r["tags"] or [],
                 created_on=r["created_on"],
+                user_content=r["user_content"] or "",
+                assistant_content=r["assistant_content"] or "",
             )
             for r in records
         ]
@@ -297,7 +282,7 @@ class Neo4jGraphRepository(GraphServiceInterface):
     async def get_chat_topics(self, chat_id: str) -> list[str]:
         """Get all topic IDs associated with a chat's messages."""
         query = """
-        MATCH (t:Topic)-[:IS_SUPPORTED_BY]->(m:Message)-[:IS_PART_OF]->(c:Chat {id: $chat_id})
+        MATCH (t:Topic)-[:IS_SUPPORTED_BY]->(m:Message {chat_id: $chat_id})
         RETURN DISTINCT t.topic_id as topic_id
         """
         records = await self._client.execute_query(query, {"chat_id": chat_id})

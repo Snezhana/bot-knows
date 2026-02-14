@@ -285,13 +285,13 @@ class BotKnows:
         if is_new:
             # New chat - full processing
             result.chats_new += 1
-            messages = self._message_builder.build(chat_ingest.messages, chat.id)
+            messages = self._message_builder.build(chat_ingest.messages, chat)
 
             for message in messages:
                 await self._storage.save_message(message)
                 result.messages_created += 1
 
-            await self._graph_service.add_chat_with_messages(chat, messages)
+            await self._graph_service.add_chat_with_messages(chat.id, messages)
 
             for message in messages:
                 await self._process_message_topics(message, result)
@@ -314,7 +314,7 @@ class BotKnows:
         existing_message_ids = {msg.message_id for msg in existing_messages}
 
         # Build all messages from import
-        all_messages = self._message_builder.build(chat_ingest.messages, chat.id)
+        all_messages = self._message_builder.build(chat_ingest.messages, chat)
 
         # If DB has same or more messages, skip
         if len(existing_messages) >= len(all_messages):

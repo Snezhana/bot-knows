@@ -32,12 +32,7 @@ class MockNeo4jClient:
         # Store node/edge data based on query
         params = parameters or {}
 
-        if "MERGE (c:Chat" in query:
-            self._nodes[f"chat:{params.get('id')}"] = {
-                "type": "Chat",
-                **params,
-            }
-        elif "MERGE (m:Message" in query:
+        if "MERGE (m:Message" in query:
             self._nodes[f"message:{params.get('message_id')}"] = {
                 "type": "Message",
                 **params,
@@ -47,14 +42,6 @@ class MockNeo4jClient:
                 "type": "Topic",
                 **params,
             }
-        elif "IS_PART_OF" in query:
-            self._edges.append(
-                {
-                    "type": "IS_PART_OF",
-                    "from": params.get("message_id"),
-                    "to": params.get("chat_id"),
-                }
-            )
         elif "FOLLOWS_AFTER" in query:
             self._edges.append(
                 {

@@ -17,9 +17,6 @@ class RelationType(StrEnum):
     """
 
     # Message relationships
-    IS_PART_OF = "IS_PART_OF"
-    """(Message)-[:IS_PART_OF]->(Chat)"""
-
     FOLLOWS_AFTER = "FOLLOWS_AFTER"
     """(Message)-[:FOLLOWS_AFTER]->(Message) - defines ordering"""
 

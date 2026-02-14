@@ -4,6 +4,7 @@ This module provides the service for building MessageDTOs from IngestMessages.
 """
 
 from bot_knows.logging import get_logger
+from bot_knows.models.chat import ChatDTO
 from bot_knows.models.ingest import IngestMessage
 from bot_knows.models.message import MessageDTO
 from bot_knows.utils.hashing import generate_message_id
@@ -25,13 +26,13 @@ class MessageBuilder:
 
     Example:
         builder = MessageBuilder()
-        messages = builder.build(ingest_messages, chat_id)
+        messages = builder.build(ingest_messages, chat)
     """
 
     def build(
         self,
         ingest_messages: list[IngestMessage],
-        chat_id: str,
+        chat: ChatDTO,
     ) -> list[MessageDTO]:
         """Build MessageDTOs from IngestMessages.
 
@@ -40,7 +41,7 @@ class MessageBuilder:
 
         Args:
             ingest_messages: List of ingested messages
-            chat_id: Parent chat ID
+            chat: Parent chat DTO (provides id, title, source, category, tags)
 
         Returns:
             List of MessageDTO objects
@@ -63,7 +64,7 @@ class MessageBuilder:
                 # If we have a pending user message, create it as standalone
                 if pending_user:
                     message_dto = self._create_message(
-                        chat_id=chat_id,
+                        chat=chat,
                         user_content=pending_user.content,
                         assistant_content="",
                         timestamp=pending_user.timestamp,
@@ -78,7 +79,7 @@ class MessageBuilder:
                 timestamp = pending_user.timestamp if pending_user else msg.timestamp
 
                 message_dto = self._create_message(
-                    chat_id=chat_id,
+                    chat=chat,
                     user_content=user_content,
                     assistant_content=msg.content,
                     timestamp=timestamp,
@@ -89,7 +90,7 @@ class MessageBuilder:
         # Handle trailing user message
         if pending_user:
             message_dto = self._create_message(
-                chat_id=chat_id,
+                chat=chat,
                 user_content=pending_user.content,
                 assistant_content="",
                 timestamp=pending_user.timestamp,
@@ -98,7 +99,7 @@ class MessageBuilder:
 
         logger.debug(
             "messages_built",
-            chat_id=chat_id,
+            chat_id=chat.id,
             input_count=len(ingest_messages),
             output_count=len(messages),
         )
@@ -107,14 +108,14 @@ class MessageBuilder:
 
     def _create_message(
         self,
-        chat_id: str,
+        chat: ChatDTO,
         user_content: str,
         assistant_content: str,
         timestamp: int,
     ) -> MessageDTO:
-        """Create a MessageDTO with deterministic ID."""
+        """Create a MessageDTO with deterministic ID and chat metadata."""
         message_id = generate_message_id(
-            chat_id=chat_id,
+            chat_id=chat.id,
             user_content=user_content,
             assistant_content=assistant_content,
             timestamp=timestamp,
@@ -122,7 +123,11 @@ class MessageBuilder:
 
         return MessageDTO(
             message_id=message_id,
-            chat_id=chat_id,
+            chat_id=chat.id,
+            chat_title=chat.title,
+            source=chat.source,
+            category=chat.category,
+            tags=chat.tags,
             user_content=user_content,
             assistant_content=assistant_content,
             created_on=timestamp,

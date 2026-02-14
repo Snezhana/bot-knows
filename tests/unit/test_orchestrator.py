@@ -470,6 +470,9 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-1",
                     chat_id="existing",
+                    chat_title="chat",
+                    source="source",
+                    category=ChatCategory.GENERAL,
                     user_content="Hello",
                     assistant_content="Hi there!",
                     created_on=1704067200,
@@ -512,6 +515,9 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-1",
                     chat_id="existing",
+                    chat_title="chat",
+                    source="source",
+                    category=ChatCategory.GENERAL,
                     user_content="Hello",
                     assistant_content="Hi there!",
                     created_on=1704067200,
@@ -519,6 +525,9 @@ class TestBotKnowsInsertChats:
                 MessageDTO(
                     message_id="existing-msg-2",
                     chat_id="existing",
+                    chat_title="chat",
+                    source="source",
+                    category=ChatCategory.GENERAL,
                     user_content="Follow up",
                     assistant_content="Sure!",
                     created_on=1704067300,
@@ -597,6 +606,9 @@ class TestBotKnowsInsertChats:
             existing_message = MessageDTO(
                 message_id="existing-msg-1",
                 chat_id="existing",
+                chat_title="chat",
+                source="source",
+                category=ChatCategory.GENERAL,
                 user_content="Hello",
                 assistant_content="Hi there!",
                 created_on=1704067200,
@@ -616,7 +628,6 @@ class TestBotKnowsInsertChats:
 
             # Verify graph methods were called for new messages
             bk._graph._mock.create_message_node.assert_called()
-            bk._graph._mock.create_is_part_of_edge.assert_called()
             bk._graph._mock.create_follows_after_edge.assert_called()
 
     @pytest.mark.asyncio

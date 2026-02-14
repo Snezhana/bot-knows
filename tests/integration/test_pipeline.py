@@ -5,6 +5,7 @@ from pathlib import Path
 from bot_knows.importers.chatgpt import ChatGPTAdapter
 from bot_knows.importers.claude import ClaudeAdapter
 from bot_knows.services.message_builder import MessageBuilder
+from bot_knows.models.chat import ChatCategory, ChatDTO
 
 # Path to fixtures
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
@@ -31,13 +32,13 @@ class TestChatGPTImportPipeline:
         assert second_chat.title == "Moja zubarka prevod"
         assert len(second_chat.messages) == 2
 
-    def test_message_pairing(self) -> None:
+    def test_message_pairing(self, sample_chat_dto) -> None:
         """Test that messages are correctly paired."""
         adapter = ChatGPTAdapter()
         chats = adapter.parse_file(FIXTURES_DIR / "chatgpt_export.json")
 
         builder = MessageBuilder()
-        messages = builder.build(chats[0].messages, "test-chat")
+        messages = builder.build(chats[0].messages, sample_chat_dto)
 
         # 4 ingest messages should become 2 message pairs
         assert len(messages) == 2
@@ -66,13 +67,13 @@ class TestClaudeImportPipeline:
         assert chat.source == "claude"
         assert len(chat.messages) == 4
 
-    def test_message_pairing(self) -> None:
+    def test_message_pairing(self, sample_chat_dto) -> None:
         """Test that messages are correctly paired."""
         adapter = ClaudeAdapter()
         chats = adapter.parse_file(FIXTURES_DIR / "claude_export.json")
 
         builder = MessageBuilder()
-        messages = builder.build(chats[0].messages, "test-chat")
+        messages = builder.build(chats[0].messages, sample_chat_dto)
 
         # 4 ingest messages should become 2 message pairs
         assert len(messages) == 2

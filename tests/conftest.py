@@ -55,7 +55,6 @@ def mock_embedding() -> AsyncMock:
 def mock_graph() -> AsyncMock:
     """Create mock graph interface."""
     graph = AsyncMock()
-    graph.create_chat_node.return_value = "test-chat-id"
     graph.create_message_node.return_value = "test-message-id"
     graph.create_topic_node.return_value = "test-topic-id"
     graph.get_related_topics.return_value = []
@@ -137,6 +136,10 @@ def sample_message_dto() -> MessageDTO:
     return MessageDTO(
         message_id="msg123",
         chat_id="abc123",
+        chat_title="Async Python",
+        source="test",
+        category=ChatCategory.CODING,
+        tags=["python", "asyncio"],
         user_content="How do I write async code in Python?",
         assistant_content="You can use async/await syntax with asyncio...",
         created_on=1704067200,
