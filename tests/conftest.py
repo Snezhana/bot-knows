@@ -37,7 +37,7 @@ def mock_llm() -> AsyncMock:
     llm = AsyncMock()
     llm.classify_chat.return_value = (ChatCategory.CODING, ["python", "testing"])
     llm.extract_topics.return_value = [("Python", 0.9), ("Testing", 0.8)]
-    llm.normalize_topic_name.return_value = "Python"
+
     return llm
 
 

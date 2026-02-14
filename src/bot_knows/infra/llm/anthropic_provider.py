@@ -154,12 +154,6 @@ Extract 0-5 topics."""
             logger.warning("topic_extraction_failed", error=str(e))
             return []
 
-    async def normalize_topic_name(self, extracted_name: str) -> str:
-        """Normalize topic name to canonical form."""
-        normalized = extracted_name.strip().lower()
-        normalized = " ".join(word.capitalize() for word in normalized.split())
-        return normalized
-
     @staticmethod
     def _parse_json_response(content: str) -> dict:
         """Parse JSON from response, handling markdown code blocks."""

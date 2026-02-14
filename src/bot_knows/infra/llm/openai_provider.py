@@ -194,11 +194,3 @@ Extract 0-5 topics."""
         except Exception as e:
             logger.warning("topic_extraction_failed", error=str(e))
             return []
-
-    async def normalize_topic_name(self, extracted_name: str) -> str:
-        """Normalize topic name to canonical form."""
-        # Simple normalization: lowercase, strip, limit length
-        normalized = extracted_name.strip().lower()
-        # Capitalize first letter of each word
-        normalized = " ".join(word.capitalize() for word in normalized.split())
-        return normalized
