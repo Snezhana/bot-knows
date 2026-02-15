@@ -37,7 +37,7 @@ def mock_llm() -> AsyncMock:
     llm = AsyncMock()
     llm.classify_chat.return_value = (ChatCategory.CODING, ["python", "testing"])
     llm.extract_topics.return_value = [("Python", 0.9), ("Testing", 0.8)]
-    llm.normalize_topic_name.return_value = "Python"
+
     return llm
 
 
@@ -55,7 +55,6 @@ def mock_embedding() -> AsyncMock:
 def mock_graph() -> AsyncMock:
     """Create mock graph interface."""
     graph = AsyncMock()
-    graph.create_chat_node.return_value = "test-chat-id"
     graph.create_message_node.return_value = "test-message-id"
     graph.create_topic_node.return_value = "test-topic-id"
     graph.get_related_topics.return_value = []

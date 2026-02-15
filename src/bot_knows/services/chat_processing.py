@@ -70,7 +70,7 @@ class ChatProcessingService:
         # Check if already exists (idempotency)
         existing = await self._storage.get_chat(chat_id)
         if existing:
-            logger.debug("chat_already_exists", chat_id=chat_id)
+            logger.info("chat_already_exists", title=title)
             return existing, False
 
         # Classify new chat

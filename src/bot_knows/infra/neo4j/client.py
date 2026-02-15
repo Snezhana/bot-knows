@@ -31,7 +31,7 @@ class Neo4jClient:
         await client.connect()
 
         result = await client.execute_query(
-            "MATCH (n:Chat) RETURN n LIMIT 10"
+            "MATCH (n:Message) RETURN n LIMIT 10"
         )
 
         await client.disconnect()
@@ -117,7 +117,6 @@ class Neo4jClient:
     async def create_indexes(self) -> None:
         """Create indexes for the knowledge graph."""
         indexes = [
-            "CREATE INDEX chat_id_idx IF NOT EXISTS FOR (c:Chat) ON (c.id)",
             "CREATE INDEX message_id_idx IF NOT EXISTS FOR (m:Message) ON (m.message_id)",
             "CREATE INDEX message_chat_idx IF NOT EXISTS FOR (m:Message) ON (m.chat_id)",
             "CREATE INDEX topic_id_idx IF NOT EXISTS FOR (t:Topic) ON (t.topic_id)",
@@ -131,7 +130,6 @@ class Neo4jClient:
     async def create_constraints(self) -> None:
         """Create uniqueness constraints."""
         constraints = [
-            "CREATE CONSTRAINT chat_id_unique IF NOT EXISTS FOR (c:Chat) REQUIRE c.id IS UNIQUE",
             "CREATE CONSTRAINT message_id_unique IF NOT EXISTS \
                 FOR (m:Message) REQUIRE m.message_id IS UNIQUE",
             "CREATE CONSTRAINT topic_id_unique IF NOT EXISTS \

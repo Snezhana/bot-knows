@@ -92,11 +92,12 @@ class DedupService:
             DedupResult with action and matched topic (if any)
         """
         # Find similar topics above low threshold
+        logger.info("start check_duplicate")
         similar_topics = await self._storage.find_similar_topics(
             embedding=candidate_embedding,
             threshold=self._low_threshold,
         )
-
+        logger.info("end check_duplicate")
         if not similar_topics:
             return DedupResult(action=DedupAction.NEW)
 

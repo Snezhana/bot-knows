@@ -57,14 +57,3 @@ class LLMInterface(Protocol):
             List of (topic_name, confidence) tuples
         """
         ...
-
-    async def normalize_topic_name(self, extracted_name: str) -> str:
-        """Normalize a topic name to canonical form.
-
-        Args:
-            extracted_name: Raw extracted topic name
-
-        Returns:
-            Normalized canonical topic name
-        """
-        ...

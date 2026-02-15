@@ -30,6 +30,11 @@ class MongoSettings(BaseSettings):
     database: str = "bot_knows"
     collection_prefix: str = ""
 
+    # Vector search settings (MongoDB Atlas)
+    vector_search_enabled: bool = True
+    vector_search_index_name: str = "topic_embedding_index"
+    vector_search_num_candidates: int = 100
+
 
 class Neo4jSettings(BaseSettings):
     """Neo4j connection settings."""
@@ -75,7 +80,7 @@ class LLMSettings(BaseSettings):
 
     provider: str = "openai"  # "openai" or "anthropic"
     api_key: SecretStr | None = None
-    model: str = "gpt-4o"
+    model: str = "gpt-4o-mini"
     embedding_model: str = "text-embedding-3-small"
     embedding_dimensions: int = 1536
 

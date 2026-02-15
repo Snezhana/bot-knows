@@ -126,9 +126,6 @@ class RecallService:
         # Save state
         await self._storage.save_recall_state(new_state)
 
-        # Boost related topics
-        await self._boost_related_topics(topic_id, state.strength)
-
         logger.debug(
             "topic_reinforced",
             topic_id=topic_id,

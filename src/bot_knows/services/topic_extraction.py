@@ -90,7 +90,7 @@ class TopicExtractionService:
             return []
 
         # Generate embeddings for all topics
-        topic_names = [name for name, _ in raw_topics]
+        topic_names = [name.lower() for name, _ in raw_topics]
         try:
             embeddings = await self._embedding.embed_batch(topic_names)
         except Exception as e:
@@ -130,7 +130,7 @@ class TopicExtractionService:
         Returns:
             Tuple of (TopicDTO, TopicEvidenceDTO)
         """
-        name = canonical_name or await self._llm.normalize_topic_name(candidate.extracted_name)
+        name = canonical_name or await self.normalize_topic_name(candidate.extracted_name)
         now = int(time.time())
 
         topic_id = generate_topic_id(name, candidate.source_message_id)
@@ -197,3 +197,9 @@ class TopicExtractionService:
         updated_topic = existing_topic.with_updated_centroid(candidate.embedding)
 
         return updated_topic, evidence
+
+    async def normalize_topic_name(self, extracted_name: str) -> str:
+        """Normalize topic name to canonical form."""
+        normalized = extracted_name.strip().lower()
+        normalized = " ".join(word.capitalize() for word in normalized.split())
+        return normalized

@@ -37,7 +37,7 @@ class TestChatGPTImportPipeline:
         chats = adapter.parse_file(FIXTURES_DIR / "chatgpt_export.json")
 
         builder = MessageBuilder()
-        messages = builder.build(chats[0].messages, "test-chat")
+        messages = builder.build(chats[0].messages, "chat1")
 
         # 4 ingest messages should become 2 message pairs
         assert len(messages) == 2
@@ -72,7 +72,7 @@ class TestClaudeImportPipeline:
         chats = adapter.parse_file(FIXTURES_DIR / "claude_export.json")
 
         builder = MessageBuilder()
-        messages = builder.build(chats[0].messages, "test-chat")
+        messages = builder.build(chats[0].messages, "chat-2")
 
         # 4 ingest messages should become 2 message pairs
         assert len(messages) == 2

@@ -15,6 +15,7 @@ from bot_knows.interfaces.graph import GraphServiceInterface
 from bot_knows.interfaces.llm import LLMInterface
 from bot_knows.interfaces.storage import StorageInterface
 from bot_knows.logging import get_logger
+from bot_knows.models.chat import ChatDTO
 from bot_knows.models.ingest import ChatIngest
 from bot_knows.models.message import MessageDTO
 from bot_knows.models.recall import TopicRecallStateDTO
@@ -37,6 +38,7 @@ class InsertResult:
 
     chats_processed: int = 0
     chats_new: int = 0
+    chats_updated: int = 0
     chats_skipped: int = 0
     messages_created: int = 0
     topics_created: int = 0
@@ -259,6 +261,7 @@ class BotKnows:
             "insert_chats_completed",
             chats_processed=result.chats_processed,
             chats_new=result.chats_new,
+            chats_updated=result.chats_updated,
             topics_created=result.topics_created,
         )
 
@@ -279,24 +282,76 @@ class BotKnows:
         # Step 1: Process chat (identity, classification, persistence)
         chat, is_new = await self._chat_processor.process(chat_ingest)
 
-        if not is_new:
+        if is_new:
+            # New chat - full processing
+            result.chats_new += 1
+            messages = self._message_builder.build(
+                ingest_messages=chat_ingest.messages, chat_id=chat.id
+            )
+
+            for message in messages:
+                await self._storage.save_message(message)
+                result.messages_created += 1
+
+            await self._graph_service.add_chat_with_messages(chat, messages)
+
+            for message in messages:
+                await self._process_message_topics(message, result)
+        else:
+            # Existing chat - check for incremental update
+            await self._process_incremental_chat(chat, chat_ingest, result)
+
+    async def _process_incremental_chat(
+        self,
+        chat: ChatDTO,
+        chat_ingest: ChatIngest,
+        result: InsertResult,
+    ) -> None:
+        """Process incremental updates for an existing chat."""
+        assert self._storage is not None
+        assert self._graph_service is not None
+
+        # Get existing messages from storage
+        existing_messages = await self._storage.get_messages_for_chat(chat.id)
+        existing_message_ids = {msg.message_id for msg in existing_messages}
+
+        # Build all messages from import
+        all_messages = self._message_builder.build(chat_ingest.messages, chat_id=chat.id)
+
+        # If DB has same or more messages, skip
+        if len(existing_messages) >= len(all_messages):
             result.chats_skipped += 1
             return
 
-        result.chats_new += 1
+        # Find new messages (not in existing)
+        new_messages = [msg for msg in all_messages if msg.message_id not in existing_message_ids]
 
-        # Step 2: Build and save messages
-        messages = self._message_builder.build(chat_ingest.messages, chat.id)
-        for message in messages:
+        if not new_messages:
+            result.chats_skipped += 1
+            return
+
+        result.chats_updated += 1
+
+        # Find the last existing message ID for graph chaining
+        last_existing_message_id = existing_messages[-1].message_id if existing_messages else None
+
+        # Save new messages to storage
+        for message in new_messages:
             await self._storage.save_message(message)
             result.messages_created += 1
 
-        # Step 3: Create graph nodes for chat and messages
-        await self._graph_service.add_chat_with_messages(chat, messages)
+        # Add new messages to graph
+        await self._graph_service.add_messages_to_chat(chat, new_messages, last_existing_message_id)
 
-        # Step 4: Process each message for topics
-        for message in messages:
+        # Process topics for new messages
+        for message in new_messages:
             await self._process_message_topics(message, result)
+
+        logger.info(
+            "chat_incrementally_updated",
+            chat_id=chat.id,
+            new_messages=len(new_messages),
+        )
 
     async def _process_message_topics(
         self,
@@ -309,13 +364,15 @@ class BotKnows:
         assert self._storage is not None
         assert self._graph_service is not None
         assert self._recall_service is not None
-
+        logger.info("start _process_message_topics")
         candidates = await self._topic_extractor.extract(message)
 
         for candidate in candidates:
+            logger.info(candidate)
             dedup_result = await self._dedup_service.check_duplicate(candidate.embedding)
-
+            logger.info("check dup")
             if dedup_result.action == DedupAction.MERGE:
+                logger.info(DedupAction.MERGE)
                 assert dedup_result.existing_topic is not None
                 topic, evidence = await self._topic_extractor.create_evidence_for_existing(
                     candidate, dedup_result.existing_topic
@@ -326,6 +383,7 @@ class BotKnows:
                 result.topics_merged += 1
 
             elif dedup_result.action == DedupAction.SOFT_MATCH:
+                logger.info(DedupAction.SOFT_MATCH)
                 assert dedup_result.existing_topic is not None
                 topic, evidence = await self._topic_extractor.create_topic_and_evidence(candidate)
                 await self._storage.save_topic(topic)
@@ -340,6 +398,7 @@ class BotKnows:
                 result.topics_created += 1
 
             else:  # NEW
+                logger.info("new")
                 topic, evidence = await self._topic_extractor.create_topic_and_evidence(candidate)
                 await self._storage.save_topic(topic)
                 await self._storage.append_evidence(evidence)

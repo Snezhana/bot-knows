@@ -210,7 +210,7 @@ class E2ETestRunner:
 
             # Step 2: Build messages
             print("  Step 2: Building messages...")
-            messages = message_builder.build(chat_ingest.messages, chat_dto.id)
+            messages = message_builder.build(chat_ingest.messages, chat_dto)
             print(f"    Created {len(messages)} message pair(s)")
 
             # Save messages to storage
@@ -220,8 +220,8 @@ class E2ETestRunner:
 
             # Step 3: Add to graph
             print("  Step 3: Adding to graph...")
-            await graph_service.add_chat_with_messages(chat_dto, messages)
-            print("    Chat and messages added to Neo4j")
+            await graph_service.add_chat_with_messages(chat_dto.id, messages)
+            print("    Messages added to Neo4j")
 
             # Step 4: Extract topics from each message
             print("  Step 4: Topic extraction...")
@@ -326,13 +326,13 @@ class E2ETestRunner:
             results["chats_imported"] += 1 if is_new else 0
 
             # Build and save messages
-            messages = message_builder.build(chat_ingest.messages, chat_dto.id)
+            messages = message_builder.build(chat_ingest.messages, chat_dto)
             for msg in messages:
                 await self.storage.save_message(msg)
             results["messages_created"] += len(messages)
 
             # Add to graph
-            await graph_service.add_chat_with_messages(chat_dto, messages)
+            await graph_service.add_chat_with_messages(chat_dto.id, messages)
 
             # Extract topics
             for msg in messages:
@@ -429,11 +429,6 @@ class E2ETestRunner:
         results = {}
 
         # Count nodes
-        chat_count = await self.neo4j_client.execute_query(
-            "MATCH (c:Chat) RETURN count(c) as count"
-        )
-        results["chat_nodes"] = chat_count[0]["count"]
-
         message_count = await self.neo4j_client.execute_query(
             "MATCH (m:Message) RETURN count(m) as count"
         )
@@ -445,16 +440,10 @@ class E2ETestRunner:
         results["topic_nodes"] = topic_count[0]["count"]
 
         print("\nNode counts:")
-        print(f"  Chat nodes: {results['chat_nodes']}")
         print(f"  Message nodes: {results['message_nodes']}")
         print(f"  Topic nodes: {results['topic_nodes']}")
 
         # Count relationships
-        is_part_of = await self.neo4j_client.execute_query(
-            "MATCH ()-[r:IS_PART_OF]->() RETURN count(r) as count"
-        )
-        results["is_part_of_edges"] = is_part_of[0]["count"]
-
         follows_after = await self.neo4j_client.execute_query(
             "MATCH ()-[r:FOLLOWS_AFTER]->() RETURN count(r) as count"
         )
@@ -466,21 +455,21 @@ class E2ETestRunner:
         results["is_supported_by_edges"] = is_supported_by[0]["count"]
 
         print("\nRelationship counts:")
-        print(f"  IS_PART_OF: {results['is_part_of_edges']}")
         print(f"  FOLLOWS_AFTER: {results['follows_after_edges']}")
         print(f"  IS_SUPPORTED_BY: {results['is_supported_by_edges']}")
 
-        # Sample query: Get topics for a chat
+        # Sample query: Get topics for a chat (using chat_id property on Message)
         sample_query = await self.neo4j_client.execute_query("""
-            MATCH (t:Topic)-[:IS_SUPPORTED_BY]->(m:Message)-[:IS_PART_OF]->(c:Chat)
-            RETURN c.title as chat, collect(DISTINCT t.canonical_name) as topics
+            MATCH (t:Topic)-[:IS_SUPPORTED_BY]->(m:Message)
+            RETURN m.chat_title as chat, collect(DISTINCT t.canonical_name) as topics
             LIMIT 3
         """)
 
         print("\nSample: Topics per chat:")
         for row in sample_query:
             topics = row["topics"][:5]  # Limit display
-            print(f"  '{row['chat'][:40]}...' -> {topics}")
+            chat_title = row["chat"] or "Untitled"
+            print(f"  '{chat_title[:40]}...' -> {topics}")
 
         return results
 

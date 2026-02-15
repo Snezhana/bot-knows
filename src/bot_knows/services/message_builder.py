@@ -25,7 +25,7 @@ class MessageBuilder:
 
     Example:
         builder = MessageBuilder()
-        messages = builder.build(ingest_messages, chat_id)
+        messages = builder.build(ingest_messages, chat)
     """
 
     def build(
@@ -40,7 +40,7 @@ class MessageBuilder:
 
         Args:
             ingest_messages: List of ingested messages
-            chat_id: Parent chat ID
+            chat_id: Parent chat_id
 
         Returns:
             List of MessageDTO objects
@@ -112,7 +112,7 @@ class MessageBuilder:
         assistant_content: str,
         timestamp: int,
     ) -> MessageDTO:
-        """Create a MessageDTO with deterministic ID."""
+        """Create a MessageDTO with deterministic ID and chat metadata."""
         message_id = generate_message_id(
             chat_id=chat_id,
             user_content=user_content,

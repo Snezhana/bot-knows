@@ -25,23 +25,12 @@ class GraphServiceInterface(Protocol):
     config_class: ClassVar[type | None] = None
 
     # Node operations
-    async def create_chat_node(self, chat: ChatDTO) -> str:
-        """Create a Chat node in the graph.
-
-        Args:
-            chat: Chat data to store
-
-        Returns:
-            Node ID
-        """
-        ...
-
-    async def create_message_node(self, message: MessageDTO) -> str:
+    async def create_message_node(self, message: MessageDTO, chat: ChatDTO) -> str:
         """Create a Message node in the graph.
 
         Args:
             message: Message data to store
-
+            chat: Chat metadata to store
         Returns:
             Node ID
         """
@@ -67,15 +56,6 @@ class GraphServiceInterface(Protocol):
         ...
 
     # Edge operations
-    async def create_is_part_of_edge(self, message_id: str, chat_id: str) -> None:
-        """Create IS_PART_OF edge: (Message)-[:IS_PART_OF]->(Chat).
-
-        Args:
-            message_id: Source message ID
-            chat_id: Target chat ID
-        """
-        ...
-
     async def create_follows_after_edge(
         self,
         message_id: str,
@@ -123,7 +103,9 @@ class GraphServiceInterface(Protocol):
 
     # Query operations
     async def get_messages_for_chat(self, chat_id: str) -> list[MessageDTO]:
-        """Get all messages in a chat, ordered by FOLLOWS_AFTER.
+        """Get all messages in a chat, ordered by created_on.
+
+        Queries Message nodes by chat_id property.
 
         Args:
             chat_id: Chat ID to query
@@ -166,7 +148,7 @@ class GraphServiceInterface(Protocol):
     async def get_chat_topics(self, chat_id: str) -> list[str]:
         """Get all topic IDs associated with a chat's messages.
 
-        Traverses: (Chat)<-[:IS_PART_OF]-(Message)<-[:IS_SUPPORTED_BY]-(Topic)
+        Traverses: (Message {chat_id})<-[:IS_SUPPORTED_BY]-(Topic)
 
         Args:
             chat_id: Chat ID to query
