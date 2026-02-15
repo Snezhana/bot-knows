@@ -45,9 +45,7 @@ async def count_nodes_and_edges(client: Neo4jClient) -> dict[str, int]:
     counts["message_nodes"] = result[0]["count"]
 
     # Count IS_PART_OF edges
-    result = await client.execute_query(
-        "MATCH ()-[r:IS_PART_OF]->() RETURN count(r) as count"
-    )
+    result = await client.execute_query("MATCH ()-[r:IS_PART_OF]->() RETURN count(r) as count")
     counts["is_part_of_edges"] = result[0]["count"]
 
     # Count Messages with chat_title property
@@ -153,10 +151,7 @@ async def main() -> None:
         print(f"  Messages with chat_title: {before_counts['messages_with_chat_title']}")
 
         # Check if migration is needed
-        if (
-            before_counts["chat_nodes"] == 0
-            and before_counts["is_part_of_edges"] == 0
-        ):
+        if before_counts["chat_nodes"] == 0 and before_counts["is_part_of_edges"] == 0:
             print("\n--- Migration Already Complete ---")
             print("  No Chat nodes or IS_PART_OF edges found.")
             print("  Graph is already in the new structure.")
