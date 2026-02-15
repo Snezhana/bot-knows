@@ -221,19 +221,9 @@ class MongoStorageRepository(StorageInterface):
                     "limit": self._vector_search_num_candidates,
                 }
             },
-            {
-                "$addFields": {
-                    "similarity_score": {"$meta": "vectorSearchScore"}
-                }
-            },
-            {
-                "$match": {
-                    "similarity_score": {"$gte": threshold}
-                }
-            },
-            {
-                "$sort": {"similarity_score": -1}
-            },
+            {"$addFields": {"similarity_score": {"$meta": "vectorSearchScore"}}},
+            {"$match": {"similarity_score": {"$gte": threshold}}},
+            {"$sort": {"similarity_score": -1}},
         ]
 
         try:
@@ -275,9 +265,7 @@ class MongoStorageRepository(StorageInterface):
             return results
 
         # Fetch all topics with embeddings
-        cursor = self._client.topics.find(
-            {"centroid_embedding": {"$exists": True, "$ne": []}}
-        )
+        cursor = self._client.topics.find({"centroid_embedding": {"$exists": True, "$ne": []}})
 
         async for doc in cursor:
             topic = self._doc_to_topic(doc)
